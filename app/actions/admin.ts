@@ -3,9 +3,9 @@
 import { headers } from "next/headers"
 
 import { db } from "@/drizzle/db"
-import { category, project, user } from "@/drizzle/db/schema"
+import { category, project, sponsorship, user } from "@/drizzle/db/schema"
 import { addDays, format } from "date-fns"
-import { and, desc, eq, gte, sql } from "drizzle-orm"
+import { and, desc, eq, gte, lte, sql } from "drizzle-orm"
 
 import { auth } from "@/lib/auth"
 import { DATE_FORMAT, LAUNCH_SETTINGS } from "@/lib/constants"
@@ -191,4 +191,92 @@ export async function addCategory(name: string) {
     }
     return { success: false, error: "An error occurred while adding the category" }
   }
+}
+
+// Get recent project submissions with user info
+export async function getRecentSubmissions(limit = 20) {
+  await checkAdminAccess()
+
+  const submissions = await db
+    .select({
+      id: project.id,
+      name: project.name,
+      slug: project.slug,
+      launchStatus: project.launchStatus,
+      launchType: project.launchType,
+      chain: project.chain,
+      ticker: project.ticker,
+      paidExpedited: project.paidExpedited,
+      paidTrending: project.paidTrending,
+      scheduledLaunchDate: project.scheduledLaunchDate,
+      createdAt: project.createdAt,
+      createdBy: project.createdBy,
+      userName: user.name,
+      userEmail: user.email,
+    })
+    .from(project)
+    .leftJoin(user, eq(project.createdBy, user.id))
+    .orderBy(desc(project.createdAt))
+    .limit(limit)
+
+  return submissions
+}
+
+// Get all sponsorships for admin
+export async function getAdminSponsorships() {
+  await checkAdminAccess()
+
+  const now = new Date()
+
+  const sponsorships = await db
+    .select()
+    .from(sponsorship)
+    .orderBy(desc(sponsorship.createdAt))
+
+  // Auto-expire old sponsorships
+  const expired = sponsorships.filter(
+    (s) => s.status === "active" && new Date(s.expiresAt) < now,
+  )
+  for (const s of expired) {
+    await db
+      .update(sponsorship)
+      .set({ status: "expired", updatedAt: now })
+      .where(eq(sponsorship.id, s.id))
+  }
+
+  // Re-fetch after expiration updates
+  const updated = await db
+    .select()
+    .from(sponsorship)
+    .orderBy(desc(sponsorship.createdAt))
+
+  return updated
+}
+
+// Update sponsorship details (name, description, logo, website)
+export async function updateSponsorship(
+  id: string,
+  data: { name?: string; description?: string; logoUrl?: string; websiteUrl?: string },
+) {
+  await checkAdminAccess()
+
+  await db
+    .update(sponsorship)
+    .set({ ...data, updatedAt: new Date() })
+    .where(eq(sponsorship.id, id))
+
+  return { success: true }
+}
+
+// Get active sponsorships (for public display)
+export async function getActiveSponsorships() {
+  const now = new Date()
+
+  const active = await db
+    .select()
+    .from(sponsorship)
+    .where(and(eq(sponsorship.status, "active"), gte(sponsorship.expiresAt, now)))
+    .orderBy(desc(sponsorship.createdAt))
+
+  return active
 }

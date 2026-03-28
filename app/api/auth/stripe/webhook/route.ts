@@ -2,7 +2,7 @@ import { revalidatePath } from "next/cache"
 import { NextResponse } from "next/server"
 
 import { db } from "@/drizzle/db"
-import { launchQuota, launchStatus, launchType, project } from "@/drizzle/db/schema"
+import { launchQuota, launchStatus, launchType, project, sponsorship } from "@/drizzle/db/schema"
 import { eq, sql } from "drizzle-orm"
 import Stripe from "stripe"
 
@@ -30,6 +30,36 @@ export async function POST(request: Request) {
     // Traiter l'événement
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session
+
+      // Check if this is a sponsorship payment
+      const tier = session.metadata?.tier
+      if (tier === "sponsor_weekly" || tier === "sponsor_monthly") {
+        if (session.payment_status === "paid") {
+          const now = new Date()
+          const durationDays = tier === "sponsor_weekly" ? 7 : 30
+          const expiresAt = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000)
+
+          await db.insert(sponsorship).values({
+            id: crypto.randomUUID(),
+            name: session.metadata?.sponsorName || "Sponsor",
+            description: session.metadata?.sponsorDescription || null,
+            websiteUrl: session.metadata?.sponsorWebsite || "",
+            tier: tier === "sponsor_weekly" ? "weekly" : "monthly",
+            status: "active",
+            stripeSessionId: session.id,
+            stripeCustomerEmail: session.customer_email || session.metadata?.userId || null,
+            amountPaid: session.amount_total || 0,
+            startsAt: now,
+            expiresAt,
+            createdAt: now,
+            updatedAt: now,
+          })
+
+          revalidatePath("/")
+          revalidatePath("/sponsors")
+        }
+        return NextResponse.json({ success: true })
+      }
 
       // Find the project using client_reference_id (which we set as projectId)
       const projectId = session.client_reference_id

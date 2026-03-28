@@ -22,6 +22,16 @@ const TIERS: Record<string, { name: string; amount: number; description: string 
     amount: 39900, // $399
     description: "30-day top placement + featured across all pages",
   },
+  sponsor_weekly: {
+    name: "Weekly Sponsor Slot",
+    amount: 3000, // $30
+    description: "7 days of featured sponsor placement on homepage & project pages",
+  },
+  sponsor_monthly: {
+    name: "Monthly Sponsor Slot",
+    amount: 9900, // $99
+    description: "30 days of featured sponsor placement on homepage & project pages",
+  },
 }
 
 export async function POST(request: Request) {
@@ -42,10 +52,19 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { tier, projectId } = body
+    const { tier, projectId, sponsorName, sponsorWebsite, sponsorDescription } = body
 
     if (!tier || !TIERS[tier]) {
       return NextResponse.json({ error: "Invalid tier" }, { status: 400 })
+    }
+
+    // Validate sponsor-specific fields
+    const isSponsorTier = tier === "sponsor_weekly" || tier === "sponsor_monthly"
+    if (isSponsorTier && (!sponsorName || !sponsorWebsite)) {
+      return NextResponse.json(
+        { error: "Sponsor name and website are required" },
+        { status: 400 },
+      )
     }
 
     const tierData = TIERS[tier]
@@ -67,14 +86,21 @@ export async function POST(request: Request) {
         },
       ],
       mode: "payment",
-      success_url: `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/pricing`,
+      success_url: isSponsorTier
+        ? `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}&type=sponsor`
+        : `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: isSponsorTier ? `${baseUrl}/sponsors` : `${baseUrl}/pricing`,
       client_reference_id: projectId || undefined,
       customer_email: session.user.email,
       metadata: {
         tier,
         userId: session.user.id,
         projectId: projectId || "",
+        ...(isSponsorTier && {
+          sponsorName: sponsorName || "",
+          sponsorWebsite: sponsorWebsite || "",
+          sponsorDescription: sponsorDescription || "",
+        }),
       },
     })
 

@@ -342,3 +342,21 @@ export const blogArticle = pgTable(
     }
   },
 )
+
+// Sponsorship table for tracking paid sponsorships via Stripe
+export const sponsorship = pgTable("sponsorship", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  websiteUrl: text("website_url").notNull(),
+  logoUrl: text("logo_url"),
+  tier: text("tier").notNull(), // "weekly" or "monthly"
+  status: text("status").notNull().default("active"), // "active", "expired", "cancelled"
+  stripeSessionId: text("stripe_session_id"),
+  stripeCustomerEmail: text("stripe_customer_email"),
+  amountPaid: integer("amount_paid"), // in cents
+  startsAt: timestamp("starts_at").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+})

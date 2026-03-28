@@ -20,7 +20,7 @@ function percentEncode(str: string): string {
   )
 }
 
-function generateOAuthHeader(method: string, url: string, _body: string): string {
+function generateOAuthHeader(method: string, url: string): string {
   const apiKey = process.env.X_API_KEY!
   const apiSecret = process.env.X_API_SECRET!
   const accessToken = process.env.X_ACCESS_TOKEN!
@@ -71,7 +71,7 @@ export async function postTweet(text: string): Promise<PostTweetResult> {
     const res = await fetch(TWEET_URL, {
       method: "POST",
       headers: {
-        Authorization: generateOAuthHeader("POST", TWEET_URL, body),
+        Authorization: generateOAuthHeader("POST", TWEET_URL),
         "Content-Type": "application/json",
       },
       body,
