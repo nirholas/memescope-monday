@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -35,6 +36,7 @@ export function DashboardProjectCard({
   commentCount,
   actionButton,
 }: DashboardProjectCardProps) {
+  const [imgError, setImgError] = useState(false)
   const projectPageUrl = `/projects/${slug}`
 
   const renderStatusBadge = () => {
@@ -61,14 +63,21 @@ export function DashboardProjectCard({
 
   const cardContent = (
     <>
-      <Image
-        src={logoUrl || "/placeholder.svg"}
-        alt={name}
-        width={48}
-        height={48}
-        className="flex-shrink-0 rounded-md bg-white object-contain p-0.5 dark:bg-zinc-800"
-        unoptimized
-      />
+      {logoUrl && !imgError ? (
+        <Image
+          src={logoUrl}
+          alt={name}
+          width={48}
+          height={48}
+          className="flex-shrink-0 rounded-md bg-white object-contain p-0.5 dark:bg-zinc-800"
+          unoptimized
+          onError={() => setImgError(true)}
+        />
+      ) : (
+        <span className="bg-muted text-muted-foreground flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-md text-lg font-bold">
+          {name.charAt(0)}
+        </span>
+      )}
       <div className="min-w-0 flex-grow">
         <h4 className="truncate text-sm font-medium sm:text-base">{name}</h4>
         <p className="text-muted-foreground mb-1 truncate text-xs sm:text-sm">

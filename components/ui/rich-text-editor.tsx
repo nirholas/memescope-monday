@@ -113,7 +113,6 @@ export function RichTextEditor({
           type="button"
           variant="ghost"
           size="sm"
-          // @ts-expect-error - toggleBold exists at runtime via StarterKit but types are mismatched
           onClick={() => editor.chain().focus().toggleBold().run()}
           className={cn("h-8 px-2", editor.isActive("bold") && "bg-muted")}
         >

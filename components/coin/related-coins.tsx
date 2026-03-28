@@ -1,3 +1,6 @@
+"use client"
+
+import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -30,6 +33,30 @@ function getChainIcon(chain: string | null) {
   }
 }
 
+function CoinLogo({ src, name }: { src: string; name: string }) {
+  const [imgError, setImgError] = useState(false)
+
+  if (!src || imgError) {
+    return (
+      <span className="bg-muted text-muted-foreground flex h-full w-full items-center justify-center text-sm font-bold">
+        {name.charAt(0)}
+      </span>
+    )
+  }
+
+  return (
+    <Image
+      src={src}
+      alt={name}
+      width={36}
+      height={36}
+      className="h-full w-full object-cover"
+      unoptimized
+      onError={() => setImgError(true)}
+    />
+  )
+}
+
 export function RelatedCoins({ coins }: RelatedCoinsProps) {
   if (coins.length === 0) return null
 
@@ -44,20 +71,7 @@ export function RelatedCoins({ coins }: RelatedCoinsProps) {
             className="border-border/60 hover:bg-muted/40 flex items-center gap-3 rounded-lg border p-2.5 transition-colors"
           >
             <div className="h-9 w-9 flex-shrink-0 overflow-hidden rounded-md">
-              {coin.logoUrl ? (
-                <Image
-                  src={coin.logoUrl}
-                  alt={coin.name}
-                  width={36}
-                  height={36}
-                  className="h-full w-full object-cover"
-                  unoptimized
-                />
-              ) : (
-                <span className="bg-muted text-muted-foreground flex h-full w-full items-center justify-center text-sm font-bold">
-                  {coin.name.charAt(0)}
-                </span>
-              )}
+              <CoinLogo src={coin.logoUrl} name={coin.name} />
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">{coin.name}</p>

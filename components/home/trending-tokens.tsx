@@ -66,6 +66,7 @@ function formatAge(createdAt?: string): string | null {
 }
 
 function TokenRow({ token }: { token: TrendingToken }) {
+  const [imgError, setImgError] = useState(false)
   const age = formatAge(token.createdAt)
   const chain = getChainLabel(token.chain)
 
@@ -81,7 +82,7 @@ function TokenRow({ token }: { token: TrendingToken }) {
 
       {/* Logo */}
       <div className="relative h-8 w-8 flex-shrink-0 overflow-hidden rounded-full bg-gray-100 dark:bg-zinc-800">
-        {token.logoUrl ? (
+        {token.logoUrl && !imgError ? (
           <Image
             src={token.logoUrl}
             alt={token.symbol}
@@ -89,6 +90,7 @@ function TokenRow({ token }: { token: TrendingToken }) {
             height={32}
             className="h-full w-full object-cover"
             unoptimized
+            onError={() => setImgError(true)}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-xs font-bold">
