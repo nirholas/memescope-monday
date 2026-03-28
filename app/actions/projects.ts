@@ -195,7 +195,7 @@ interface ProjectSubmissionData {
   name: string
   description: string
   websiteUrl: string
-  logoUrl: string
+  logoUrl: string | null
   productImage: string | null
   categories: string[]
   techStack?: string[]
@@ -242,7 +242,7 @@ export async function submitProject(projectData: ProjectSubmissionData) {
     } = projectData
 
     // Validation
-    if (!name || !description || !websiteUrl || !logoUrl) {
+    if (!name || !description || !websiteUrl) {
       return { success: false, error: "Missing required fields" }
     }
 

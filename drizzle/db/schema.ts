@@ -129,7 +129,7 @@ export const project = pgTable(
     slug: text("slug").notNull().unique(),
     description: text("description").notNull(),
     websiteUrl: text("website_url").notNull(),
-    logoUrl: text("logo_url").notNull(),
+    logoUrl: text("logo_url"),
     coverImageUrl: text("cover_image_url"),
     productImage: text("product_image"),
     githubUrl: text("github_url"),

@@ -57,6 +57,13 @@
       "when": 1774698445211,
       "tag": "0007_clammy_magik",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1774712245228,
+      "tag": "0008_remove-logo-requirement",
+      "breakpoints": true
     }
   ]
 }

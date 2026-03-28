@@ -344,10 +344,9 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
         !formData.name ||
         !formData.ticker ||
         !formData.websiteUrl ||
-        !formData.description ||
-        (process.env.NODE_ENV !== "development" && !uploadedLogoUrl)
+        !formData.description
       ) {
-        setError("Please fill in all required project information and upload the logo.")
+        setError("Please fill in all required project information.")
         return
       }
       try {
@@ -408,11 +407,10 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
       !formData.ticker ||
       !formData.websiteUrl ||
       !formData.description ||
-      (process.env.NODE_ENV !== "development" && !uploadedLogoUrl) ||
       !formData.pricing
     ) {
       setError(
-        "Some required information or the logo is missing. Please go back and complete all fields.",
+        "Some required information is missing. Please go back and complete all fields.",
       )
       setIsPending(false)
       return
@@ -450,10 +448,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
     }
 
     try {
-      const finalLogoUrl =
-        process.env.NODE_ENV === "development" && !uploadedLogoUrl
-          ? "https://placehold.co/128x128/E2E8F0/718096?text=Logo"
-          : uploadedLogoUrl!
+      const finalLogoUrl = uploadedLogoUrl || null
 
       const projectData = {
         name: formData.name,
@@ -799,7 +794,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="logoUrl">
-                Logo (Max 1MB) <span className="text-red-500">*</span>
+                Logo (Max 1MB) <span>(Optional)</span>
               </Label>
               <p className="text-muted-foreground text-xs">
                 Recommended: 1:1 square image (e.g., 256x256px).
