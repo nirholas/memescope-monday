@@ -50,6 +50,13 @@
       "when": 1774691757953,
       "tag": "0006_magical_wallflower",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1774698445211,
+      "tag": "0007_clammy_magik",
+      "breakpoints": true
     }
   ]
 }
