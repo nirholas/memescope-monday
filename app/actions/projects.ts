@@ -242,7 +242,7 @@ export async function submitProject(projectData: ProjectSubmissionData) {
     } = projectData
 
     // Validation
-    if (!name || !description || !websiteUrl || !logoUrl || categories.length === 0) {
+    if (!name || !description || !websiteUrl || !logoUrl) {
       return { success: false, error: "Missing required fields" }
     }
 

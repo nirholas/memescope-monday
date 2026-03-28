@@ -322,7 +322,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
       } catch (err) {
         console.error("Error checking launch date limit:", err)
         setIsLaunchDateOverLimit(false)
-        setLaunchDateLimitError("Could not verify launch date limit. Please try again.")
+        setLaunchDateLimitError("Could not verify listing date limit. Please try again.")
       } finally {
         setIsLoadingDateCheck(false)
       }
@@ -359,13 +359,8 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
     }
 
     if (currentStep === 2) {
-      if (
-        formData.categories.length === 0 ||
-        formData.techStack.length === 0 ||
-        formData.platforms.length === 0 ||
-        !formData.pricing
-      ) {
-        setError("Please complete the technical details and categorization.")
+      if (!formData.pricing) {
+        setError("Please select a pricing model.")
         return
       }
 
@@ -382,11 +377,11 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
 
     if (currentStep === 3) {
       if (!formData.scheduledDate) {
-        setError("Please select a launch date.")
+        setError("Please select a listing date.")
         return
       }
       if (isLaunchDateOverLimit) {
-        setError(launchDateLimitError || "This launch date is not available due to daily limit.")
+        setError(launchDateLimitError || "This listing date is not available due to daily limit.")
         return
       }
     }
@@ -414,8 +409,6 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
       !formData.websiteUrl ||
       !formData.description ||
       (process.env.NODE_ENV !== "development" && !uploadedLogoUrl) ||
-      formData.categories.length === 0 ||
-      formData.platforms.length === 0 ||
       !formData.pricing
     ) {
       setError(
@@ -443,12 +436,6 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
     setIsPending(true)
     setError(null)
     setLaunchDateLimitError(null)
-
-    if (formData.techStack.length === 0) {
-      setError("Please enter at least one technology in the Tech Stack.")
-      setIsPending(false)
-      return
-    }
 
     if (formData.categories.length > 3) {
       setError("You can select a maximum of 3 categories.")
@@ -574,7 +561,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
               shortLabel: "Details",
               icon: RiInformation2Line,
             },
-            { step: 3, label: "Launch Date", icon: RiCalendarLine },
+            { step: 3, label: "Listing Date", icon: RiCalendarLine },
             { step: 4, label: "Review", icon: RiFileCheckLine },
           ].map(({ step, label, shortLabel, icon: Icon }) => (
             <div
@@ -630,7 +617,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
         <div className="bg-muted/50 h-1.5 w-full overflow-hidden rounded-full">
           <div
             className="bg-primary h-full rounded-full transition-all duration-300 ease-out"
-            style={{ width: `${((currentStep - 1) / 2) * 100}%` }}
+            style={{ width: `${((currentStep - 1) / 3) * 100}%` }}
           />
         </div>
       </div>
@@ -671,59 +658,94 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
 
   const renderStepContent = () => {
     switch (currentStep) {
-      case 1:
+      case 0:
         return (
-          <div className="space-y-6">
-            {/* Contract Address Autofill */}
-            <div className="rounded-lg border border-blue-200 bg-blue-50/50 p-4 dark:border-blue-900/50 dark:bg-blue-950/20">
-              <Label className="mb-2 block text-sm font-semibold">
-                Quick Fill from Contract Address
-              </Label>
-              <p className="text-muted-foreground mb-3 text-xs">
-                Paste your contract address and select the chain to auto-fill the form.
+          <div className="mx-auto max-w-lg space-y-6 py-4">
+            <div className="text-center">
+              <h2 className="text-foreground text-xl font-bold">Submit a Coin</h2>
+              <p className="text-muted-foreground mt-1 text-sm">
+                Paste your contract address to auto-fill everything, or skip to fill manually.
               </p>
-              <div className="mb-3 flex flex-wrap gap-2">
-                {["solana", "base", "bnb", "ethereum"].map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setFormData((prev) => ({ ...prev, chain: c }))}
-                    className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                      formData.chain === c
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground hover:bg-muted/80"
-                    }`}
-                  >
-                    {c.charAt(0).toUpperCase() + c.slice(1)}
-                  </button>
-                ))}
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <Label className="mb-2 block text-sm font-medium">Chain</Label>
+                <div className="flex flex-wrap gap-2">
+                  {["solana", "base", "bnb", "ethereum"].map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, chain: c }))}
+                      className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                        formData.chain === c
+                          ? "bg-primary text-primary-foreground"
+                          : "border-border bg-background hover:bg-muted border"
+                      }`}
+                    >
+                      {c === "bnb" ? "BNB" : c.charAt(0).toUpperCase() + c.slice(1)}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="flex gap-2">
+
+              <div>
+                <Label htmlFor="contractAddressStep0" className="mb-2 block text-sm font-medium">
+                  Contract Address
+                </Label>
                 <Input
+                  id="contractAddressStep0"
                   name="contractAddress"
                   value={formData.contractAddress}
                   onChange={handleInputChange}
                   placeholder="Paste contract address or token mint..."
-                  className="flex-1 bg-white font-mono text-sm dark:bg-gray-950"
+                  className="font-mono text-sm"
                 />
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => lookupContract(formData.contractAddress, formData.chain)}
-                  disabled={isLookingUp || formData.contractAddress.length < 20}
-                  className="h-9 px-4"
-                >
-                  {isLookingUp ? <RiLoader4Line className="h-4 w-4 animate-spin" /> : "Autofill"}
-                </Button>
               </div>
+
+              <Button
+                type="button"
+                className="w-full"
+                size="lg"
+                onClick={async () => {
+                  if (formData.contractAddress.length >= 20) {
+                    await lookupContract(formData.contractAddress, formData.chain)
+                  }
+                  setCurrentStep(1)
+                }}
+                disabled={isLookingUp}
+              >
+                {isLookingUp ? (
+                  <>
+                    <RiLoader4Line className="mr-2 h-4 w-4 animate-spin" />
+                    Looking up token...
+                  </>
+                ) : formData.contractAddress.length >= 20 ? (
+                  <>
+                    <RiRocketLine className="mr-2 h-4 w-4" />
+                    Autofill & Continue
+                  </>
+                ) : (
+                  <>
+                    <RiArrowRightLine className="mr-2 h-4 w-4" />
+                    Continue Manually
+                  </>
+                )}
+              </Button>
+
               {lookupDone && (
-                <p className="mt-2 flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-                  <RiCheckboxCircleFill className="h-3.5 w-3.5" />
-                  Form auto-filled from on-chain data. Review and edit below.
+                <p className="flex items-center justify-center gap-1 text-sm text-green-600 dark:text-green-400">
+                  <RiCheckboxCircleFill className="h-4 w-4" />
+                  Token found! Proceeding with auto-filled data...
                 </p>
               )}
             </div>
+          </div>
+        )
 
+      case 1:
+        return (
+          <div className="space-y-6">
             <div>
               <Label htmlFor="name">
                 Project Name <span className="text-red-500">*</span>
@@ -935,7 +957,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
           <div className="space-y-8">
             <div>
               <Label className="mb-2 block">
-                Categories <span className="text-red-500">*</span>
+                Categories
                 <span className="text-muted-foreground ml-2 text-xs">
                   ({formData.categories.length}/3 selected)
                 </span>
@@ -975,7 +997,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
 
             <div>
               <Label htmlFor={tagInputId}>
-                Tech Stack <span className="text-red-500">*</span>
+                Tech Stack
                 <span className="text-muted-foreground ml-2 text-xs">
                   ({formData.techStack.length}/5 technologies)
                 </span>
@@ -1011,7 +1033,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
 
             <div>
               <Label className="mb-2 block">
-                Platforms <span className="text-red-500">*</span>
+                Platforms
               </Label>
               <div className="space-y-3 rounded-md border p-4">
                 {Object.entries(platformType).map(([key, value]) => (
@@ -1037,35 +1059,35 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
               </p>
             </div>
 
-            <div>
-              <Label className="mb-2 block">
-                Chain <span className="text-red-500">*</span>
-              </Label>
-              <div className="space-y-3 rounded-md border p-4">
-                {(["solana", "base", "bnb", "ethereum"] as const).map((chain) => (
-                  <div key={chain} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`chain-${chain}`}
-                      checked={formData.chain === chain}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setFormData((prev) => ({ ...prev, chain }))
-                        }
-                      }}
-                    />
-                    <Label
-                      htmlFor={`chain-${chain}`}
-                      className="cursor-pointer font-normal capitalize"
-                    >
-                      {chain}
-                    </Label>
-                  </div>
-                ))}
+            {!formData.contractAddress && (
+              <div>
+                <Label className="mb-2 block">Chain</Label>
+                <div className="space-y-3 rounded-md border p-4">
+                  {(["solana", "base", "bnb", "ethereum"] as const).map((chain) => (
+                    <div key={chain} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`chain-${chain}`}
+                        checked={formData.chain === chain}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setFormData((prev) => ({ ...prev, chain }))
+                          }
+                        }}
+                      />
+                      <Label
+                        htmlFor={`chain-${chain}`}
+                        className="cursor-pointer font-normal capitalize"
+                      >
+                        {chain}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  Select the blockchain your coin is on.
+                </p>
               </div>
-              <p className="text-muted-foreground mt-1 text-xs">
-                Select the blockchain your coin is on.
-              </p>
-            </div>
+            )}
 
             <div>
               <Label className="mb-2 block">
@@ -1169,15 +1191,16 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
           <div className="space-y-8">
             <div className="flex items-center gap-2">
               <RiCalendarLine className="h-5 w-5" />
-              <h3 className="text-lg font-medium">Choose Launch Type & Date</h3>
+              <h3 className="text-lg font-medium">Choose Listing Type & Date</h3>
             </div>
 
             <div className="bg-muted/30 border-muted flex items-start gap-2 rounded-lg border p-3 sm:p-4">
               <RiInformationLine className="mt-0.5 h-5 w-5 flex-shrink-0" />
               <div className="text-xs sm:text-sm">
-                <p className="font-medium">Select your launch type and date</p>
+                <p className="font-medium">Select your listing type and date</p>
                 <p className="text-muted-foreground mt-1">
-                  All launches happen at {LAUNCH_SETTINGS.LAUNCH_HOUR_UTC}:00 UTC. We launch a
+                  This is when your project goes live on our site — not your coin&apos;s launch date.
+                  All listings go live at {LAUNCH_SETTINGS.LAUNCH_HOUR_UTC}:00 UTC. We list a
                   limited number of projects each day.
                 </p>
               </div>
@@ -1320,7 +1343,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
 
             <div>
               <h4 className="mb-3 text-sm font-medium">
-                Launch Date <span className="text-red-500">*</span>
+                Listing Date <span className="text-red-500">*</span>
               </h4>
               {isLoadingDates ? (
                 <div className="text-muted-foreground flex items-center justify-center gap-2 py-4">
@@ -1328,7 +1351,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
                 </div>
               ) : availableDates.length === 0 && !isLoadingDates ? (
                 <p className="text-muted-foreground rounded-md border p-4 text-center text-sm">
-                  No available launch dates found for the selected type in the allowed range.
+                  No available listing dates found for the selected type in the allowed range.
                 </p>
               ) : (
                 <div>
@@ -1339,7 +1362,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
                     value={formData.scheduledDate || ""}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select a launch date" />
+                      <SelectValue placeholder="Select a listing date" />
                     </SelectTrigger>
                     <SelectContent>
                       {groupDatesByMonth(availableDates).map((group) => (
@@ -1686,7 +1709,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
                 </div>
 
                 <div>
-                  <h4 className="mb-3 border-b pb-2 text-base font-semibold">Launch Plan</h4>
+                  <h4 className="mb-3 border-b pb-2 text-base font-semibold">Listing Plan</h4>
                   <div className="flex flex-col gap-4 text-sm sm:flex-row">
                     <div
                       className={`flex w-fit items-center gap-2 rounded-md border px-3 py-2 ${
@@ -1738,7 +1761,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
                     <p className="font-medium">Ready to submit?</p>
                     <p className="text-muted-foreground text-xs">
                       Please review all information carefully. Once submitted, your project will be
-                      scheduled for launch.
+                      scheduled for listing.
                       {formData.launchType !== LAUNCH_TYPES.FREE && (
                         <span className="mt-1 block">
                           You will be redirected to the payment page after submission.
@@ -1758,7 +1781,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
-      {renderStepper()}
+      {currentStep >= 1 && renderStepper()}
 
       {renderStepContent()}
 
@@ -1768,12 +1791,18 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
         </div>
       )}
 
-      <div className="flex items-center justify-between border-t pt-6">
+      {currentStep >= 1 && <div className="flex items-center justify-between border-t pt-6">
         <Button
           type="button"
           variant="outline"
-          onClick={prevStep}
-          disabled={currentStep === 1 || isPending || isUploadingLogo || isUploadingProductImage}
+          onClick={() => {
+            if (currentStep === 1) {
+              setCurrentStep(0)
+            } else {
+              prevStep()
+            }
+          }}
+          disabled={isPending || isUploadingLogo || isUploadingProductImage}
         >
           <RiArrowLeftLine className="mr-2 h-4 w-4" />
           Previous
@@ -1810,7 +1839,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
             Submit Project
           </Button>
         )}
-      </div>
+      </div>}
     </form>
   )
 }

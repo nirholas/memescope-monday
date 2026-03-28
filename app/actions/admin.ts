@@ -17,7 +17,7 @@ async function checkAdminAccess() {
   const session = await auth.api.getSession({
     headers: await headers(),
   })
-  if (!session?.user?.role || session.user.role !== "admin") {
+  if (!(session?.user as any)?.role || (session.user as any).role !== "admin") {
     throw new Error("Unauthorized: Admin access required")
   }
 }

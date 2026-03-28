@@ -21,6 +21,7 @@ export function ProjectImageWithLoader({ src, alt }: ProjectImageWithLoaderProps
         height={400}
         className="h-auto w-full object-cover"
         priority
+        unoptimized
         onLoad={() => setIsLoading(false)}
         onError={() => setIsLoading(false)}
       />

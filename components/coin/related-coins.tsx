@@ -44,14 +44,20 @@ export function RelatedCoins({ coins }: RelatedCoinsProps) {
             className="border-border/60 hover:bg-muted/40 flex items-center gap-3 rounded-lg border p-2.5 transition-colors"
           >
             <div className="h-9 w-9 flex-shrink-0 overflow-hidden rounded-md">
-              <Image
-                src={coin.logoUrl}
-                alt={coin.name}
-                width={36}
-                height={36}
-                className="h-full w-full object-cover"
-                unoptimized
-              />
+              {coin.logoUrl ? (
+                <Image
+                  src={coin.logoUrl}
+                  alt={coin.name}
+                  width={36}
+                  height={36}
+                  className="h-full w-full object-cover"
+                  unoptimized
+                />
+              ) : (
+                <span className="bg-muted text-muted-foreground flex h-full w-full items-center justify-center text-sm font-bold">
+                  {coin.name.charAt(0)}
+                </span>
+              )}
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">{coin.name}</p>

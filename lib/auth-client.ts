@@ -2,19 +2,7 @@ import { stripeClient } from "@better-auth/stripe/client"
 import { adminClient, oneTapClient } from "better-auth/client/plugins"
 import { createAuthClient } from "better-auth/react"
 
-export const {
-  signIn,
-  signUp,
-  useSession,
-  signOut,
-  getSession,
-  updateUser,
-  changePassword,
-  forgetPassword,
-  resetPassword,
-  oneTap,
-  admin,
-} = createAuthClient({
+const authClient = createAuthClient({
   baseURL: process.env.BETTER_AUTH_URL!,
   trustedOrigins: [
     process.env.NEXT_PUBLIC_URL || "http://localhost:3000",
@@ -32,3 +20,22 @@ export const {
     adminClient(),
   ],
 })
+
+export const {
+  signIn,
+  signUp,
+  useSession,
+  signOut,
+  getSession,
+  updateUser,
+  changePassword,
+  resetPassword,
+  oneTap,
+  admin,
+} = authClient
+
+export const forgetPassword = (authClient as any).forgetPassword as (options: {
+  email: string
+  redirectTo: string
+  fetchOptions?: { headers?: Record<string, string> }
+}) => Promise<any>

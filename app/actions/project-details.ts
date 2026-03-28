@@ -93,6 +93,32 @@ export async function hasUserUpvoted(projectId: string) {
   return userUpvotes.length > 0
 }
 
+// Backfill missing logoUrl from enrichment data (called on detail page visit)
+export async function backfillProjectLogo(projectId: string, logoUrl: string) {
+  if (!projectId || !logoUrl) return
+
+  try {
+    const [proj] = await db
+      .select({ logoUrl: project.logoUrl })
+      .from(project)
+      .where(eq(project.id, projectId))
+      .limit(1)
+
+    if (!proj) return
+
+    const needsLogo =
+      !proj.logoUrl || proj.logoUrl === "" || proj.logoUrl.includes("placehold")
+    if (!needsLogo) return
+
+    await db
+      .update(project)
+      .set({ logoUrl, updatedAt: new Date() })
+      .where(eq(project.id, projectId))
+  } catch (e) {
+    console.error("Failed to backfill project logo:", e)
+  }
+}
+
 // Get related coins (same categories, excluding current project)
 export async function getRelatedCoins(projectId: string, categoryIds: string[], limit = 3) {
   if (categoryIds.length === 0) return []

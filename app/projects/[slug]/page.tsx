@@ -40,7 +40,12 @@ import { ProjectImageWithLoader } from "@/components/project/project-image-with-
 import { ShareButton } from "@/components/project/share-button"
 import { UpvoteButton } from "@/components/project/upvote-button"
 import { getCoinDetailData } from "@/app/actions/coin-data"
-import { getProjectBySlug, getRelatedCoins, hasUserUpvoted } from "@/app/actions/project-details"
+import {
+  backfillProjectLogo,
+  getProjectBySlug,
+  getRelatedCoins,
+  hasUserUpvoted,
+} from "@/app/actions/project-details"
 
 // Helper to format large numbers
 function formatNumber(num: number | null | undefined): string {
@@ -172,6 +177,24 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       : Promise.resolve(null),
     getRelatedCoins(projectData.id, projectData.categories?.map((c: { id: string }) => c.id) ?? []),
   ])
+
+  // Backfill missing logo from enrichment data
+  if (coinDetail) {
+    const enrichedLogo =
+      coinDetail.pumpfun?.imageUri ||
+      coinDetail.dexscreener?.info?.imageUrl ||
+      coinDetail.heliusMeta?.image ||
+      null
+    if (enrichedLogo) {
+      const needsLogo =
+        !projectData.logoUrl ||
+        projectData.logoUrl === "" ||
+        projectData.logoUrl.includes("placehold")
+      if (needsLogo) {
+        backfillProjectLogo(projectData.id, enrichedLogo)
+      }
+    }
+  }
 
   const scheduledDate = projectData.scheduledLaunchDate
     ? new Date(projectData.scheduledLaunchDate)
@@ -361,15 +384,21 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 <div className="flex min-w-0 flex-1 items-center gap-4">
                   {/* Logo */}
                   <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 dark:border-transparent">
-                    <Image
-                      src={projectData.logoUrl}
-                      alt={`${projectData.name} Logo`}
-                      width={64}
-                      height={64}
-                      className="h-full w-full object-cover"
-                      priority
-                      unoptimized
-                    />
+                    {projectData.logoUrl && !projectData.logoUrl.includes("placehold") ? (
+                      <Image
+                        src={projectData.logoUrl}
+                        alt={`${projectData.name} Logo`}
+                        width={64}
+                        height={64}
+                        className="h-full w-full object-cover"
+                        priority
+                        unoptimized
+                      />
+                    ) : (
+                      <span className="bg-muted text-muted-foreground flex h-full w-full items-center justify-center text-xl font-bold">
+                        {projectData.name.charAt(0)}
+                      </span>
+                    )}
                   </div>
 
                   {/* Title and info */}
@@ -481,15 +510,21 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 {/* Logo + Titre */}
                 <div className="flex flex-col items-start gap-2">
                   <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 dark:border-transparent">
-                    <Image
-                      src={projectData.logoUrl}
-                      alt={`${projectData.name} Logo`}
-                      width={64}
-                      height={64}
-                      className="h-full w-full object-cover"
-                      priority
-                      unoptimized
-                    />
+                    {projectData.logoUrl && !projectData.logoUrl.includes("placehold") ? (
+                      <Image
+                        src={projectData.logoUrl}
+                        alt={`${projectData.name} Logo`}
+                        width={64}
+                        height={64}
+                        className="h-full w-full object-cover"
+                        priority
+                        unoptimized
+                      />
+                    ) : (
+                      <span className="bg-muted text-muted-foreground flex h-full w-full items-center justify-center text-xl font-bold">
+                        {projectData.name.charAt(0)}
+                      </span>
+                    )}
                   </div>
                   <div className="min-w-0 flex-1 space-y-1">
                     <div className="flex flex-wrap items-center gap-2">

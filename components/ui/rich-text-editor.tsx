@@ -56,10 +56,10 @@ export function RichTextEditor({
         heading: {
           levels: [1, 2],
         },
-      }),
+      }) as any,
       Placeholder.configure({
         placeholder,
-      }),
+      }) as any,
     ],
     content,
     onUpdate: ({ editor }) => {

@@ -66,6 +66,30 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "pump.fun",
       },
+      {
+        protocol: "https",
+        hostname: "i.imgur.com",
+      },
+      {
+        protocol: "https",
+        hostname: "nftstorage.link",
+      },
+      {
+        protocol: "https",
+        hostname: "arweave.net",
+      },
+      {
+        protocol: "https",
+        hostname: "gateway.pinata.cloud",
+      },
+      {
+        protocol: "https",
+        hostname: "assets.coingecko.com",
+      },
+      {
+        protocol: "https",
+        hostname: "coin-images.coingecko.com",
+      },
     ],
   },
 }
