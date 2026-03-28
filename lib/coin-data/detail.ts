@@ -343,8 +343,8 @@ export async function fetchCoinDetail(
           symbol: dexscreener.quoteToken.symbol,
           address: dexscreener.quoteToken.address,
         },
-        pairCreatedAt: (dexscreener as Record<string, unknown>).pairCreatedAt
-          ? String((dexscreener as Record<string, unknown>).pairCreatedAt)
+        pairCreatedAt: (dexscreener as unknown as Record<string, unknown>).pairCreatedAt
+          ? String((dexscreener as unknown as Record<string, unknown>).pairCreatedAt)
           : null,
       }
     : null

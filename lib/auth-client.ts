@@ -17,9 +17,7 @@ export const {
 } = createAuthClient({
   baseURL: process.env.BETTER_AUTH_URL!,
   trustedOrigins: [
-    process.env.NODE_ENV !== "development"
-      ? "https://www.open-launch.com"
-      : "http://localhost:3000",
+    process.env.NEXT_PUBLIC_URL || "http://localhost:3000",
   ],
   plugins: [
     stripeClient({
