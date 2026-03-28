@@ -10,6 +10,8 @@ import {
 import { SponsorCheckoutButton } from "@/components/pricing/sponsor-checkout-button"
 import { getLast30DaysPageviews, getLast30DaysVisitors } from "@/app/actions/plausible"
 
+export const dynamic = 'force-dynamic'
+
 export const metadata = {
   title: "Sponsors - Memescope Monday",
   description: "Support Memescope Monday and gain visibility for your product or service.",

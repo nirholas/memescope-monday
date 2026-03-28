@@ -3,6 +3,8 @@ import { Metadata } from "next"
 import Link from "next/link"
 
 import { db } from "@/drizzle/db"
+
+export const dynamic = 'force-dynamic'
 import { blogArticle } from "@/drizzle/db/schema"
 import { desc } from "drizzle-orm"
 import { Calendar, Clock } from "lucide-react"

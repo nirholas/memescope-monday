@@ -124,7 +124,6 @@ export function RichTextEditor({
           type="button"
           variant="ghost"
           size="sm"
-          // @ts-expect-error - toggleItalic exists at runtime via StarterKit but types are mismatched
           onClick={() => editor.chain().focus().toggleItalic().run()}
           className={cn("h-8 px-2", editor.isActive("italic") && "bg-muted")}
         >
