@@ -92,7 +92,7 @@ interface SubmitProjectFormProps {
 
 export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
   const router = useRouter()
-  const [currentStep, setCurrentStep] = useState(1)
+  const [currentStep, setCurrentStep] = useState(0)
   const [formData, setFormData] = useState<ProjectFormData>({
     name: "",
     ticker: "",
