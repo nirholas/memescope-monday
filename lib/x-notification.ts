@@ -20,7 +20,7 @@ function percentEncode(str: string): string {
   )
 }
 
-function generateOAuthHeader(method: string, url: string, body: string): string {
+function generateOAuthHeader(method: string, url: string, _body: string): string {
   const apiKey = process.env.X_API_KEY!
   const apiSecret = process.env.X_API_SECRET!
   const accessToken = process.env.X_ACCESS_TOKEN!
