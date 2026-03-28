@@ -71,7 +71,7 @@ export default function FooterSection() {
           </div>
 
           {/* Right Section: Columnar Navigation Links - 2 colonnes sur mobile, 4 sur md */}
-          <div className="grid grid-cols-2 gap-8 md:col-span-8 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-8 md:col-span-8 md:grid-cols-3">
             {/* Discover Column */}
             <div className="text-left">
               <h3 className="text-foreground text-sm font-semibold tracking-wider uppercase">
@@ -98,25 +98,6 @@ export default function FooterSection() {
               </h3>
               <ul role="list" className="mt-4 flex flex-col items-start space-y-3">
                 {resourcesLinks.map((link) => (
-                  <li key={link.title}>
-                    <Link
-                      href={link.href}
-                      className="text-muted-foreground hover:text-primary text-sm transition-colors duration-150"
-                    >
-                      {link.title}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Legal Column */}
-            <div className="text-left">
-              <h3 className="text-foreground text-sm font-semibold tracking-wider uppercase">
-                Legal
-              </h3>
-              <ul role="list" className="mt-4 flex flex-col items-start space-y-3">
-                {legalLinks.map((link) => (
                   <li key={link.title}>
                     <Link
                       href={link.href}
