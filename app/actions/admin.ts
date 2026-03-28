@@ -5,7 +5,7 @@ import { headers } from "next/headers"
 import { db } from "@/drizzle/db"
 import { category, project, sponsorship, user } from "@/drizzle/db/schema"
 import { addDays, format } from "date-fns"
-import { and, desc, eq, gte, lte, sql } from "drizzle-orm"
+import { and, desc, eq, gte, sql } from "drizzle-orm"
 
 import { auth } from "@/lib/auth"
 import { DATE_FORMAT, LAUNCH_SETTINGS } from "@/lib/constants"

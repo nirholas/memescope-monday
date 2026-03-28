@@ -1,5 +1,3 @@
-import Link from "next/link"
-
 import { RiCheckboxCircleFill } from "@remixicon/react"
 
 import { SPONSORSHIP_SLOTS } from "@/lib/constants"
