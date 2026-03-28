@@ -10,7 +10,7 @@ interface Project {
   id: string
   slug: string
   name: string
-  logoUrl: string
+  logoUrl: string | null
   description?: string | null
   launchStatus: string
 }

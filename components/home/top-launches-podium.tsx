@@ -8,7 +8,7 @@ interface ProjectPodiumItem {
   id: string
   name: string
   slug: string
-  logoUrl: string
+  logoUrl: string | null
   dailyRanking: number | null
 }
 
@@ -16,7 +16,7 @@ interface TopLaunchesPodiumProps {
   topProjects: ProjectPodiumItem[]
 }
 
-function PodiumLogo({ src, name }: { src: string; name: string }) {
+function PodiumLogo({ src, name }: { src: string | null; name: string }) {
   const [imgError, setImgError] = useState(false)
 
   if (!src || imgError) {

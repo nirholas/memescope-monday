@@ -16,7 +16,7 @@ function stripHtml(html: string): string {
 interface DashboardProjectCardProps {
   name: string
   slug: string
-  logoUrl: string
+  logoUrl: string | null
   description: string
   launchStatus: string
   scheduledLaunchDate?: string | Date | null

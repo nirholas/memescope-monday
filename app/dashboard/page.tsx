@@ -30,7 +30,7 @@ interface BaseProject {
   id: string
   name: string
   slug: string
-  logoUrl: string
+  logoUrl: string | null
   description: string
   launchStatus: string
   scheduledLaunchDate?: string | Date | null

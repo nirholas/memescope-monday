@@ -25,7 +25,7 @@ interface ProjectCardProps {
   slug: string
   name: string
   description: string
-  logoUrl: string
+  logoUrl: string | null
   upvoteCount: number
   commentCount: number
   launchStatus: string

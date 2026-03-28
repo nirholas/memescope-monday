@@ -262,7 +262,7 @@ export async function scheduleLaunch(
     )
 
     // Déterminer le statut initial en fonction du type de lancement
-    let initialStatus: LaunchStatus = launchStatus.SCHEDULED
+    let initialStatus: LaunchStatus = launchStatus.ONGOING
 
     // Pour les lancements premium, définir le statut à PAYMENT_PENDING
     if (launchTypeValue === LAUNCH_TYPES.PREMIUM || launchTypeValue === LAUNCH_TYPES.PREMIUM_PLUS) {

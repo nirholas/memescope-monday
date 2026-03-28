@@ -17,7 +17,7 @@ interface ProjectSummary {
   slug: string
   name: string
   description: string | null
-  logoUrl: string
+  logoUrl: string | null
   websiteUrl?: string | null
   upvoteCount: number
   commentCount?: number | null

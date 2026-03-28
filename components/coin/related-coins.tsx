@@ -9,7 +9,7 @@ interface RelatedCoin {
   name: string
   slug: string
   ticker: string | null
-  logoUrl: string
+  logoUrl: string | null
   chain: string | null
   upvoteCount: number
 }
@@ -33,7 +33,7 @@ function getChainIcon(chain: string | null) {
   }
 }
 
-function CoinLogo({ src, name }: { src: string; name: string }) {
+function CoinLogo({ src, name }: { src: string | null; name: string }) {
   const [imgError, setImgError] = useState(false)
 
   if (!src || imgError) {

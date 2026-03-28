@@ -24,7 +24,7 @@ interface TrendingProjectCardProps {
   slug: string
   name: string
   description: string
-  logoUrl: string
+  logoUrl: string | null
   upvoteCount: number
   launchStatus: string
   userHasUpvoted: boolean
