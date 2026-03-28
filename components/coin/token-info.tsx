@@ -12,7 +12,7 @@ interface TokenInfoProps {
   chain: string
 }
 
-export function TokenInfo({ data, chain }: TokenInfoProps) {
+export function TokenInfo({ data }: TokenInfoProps) {
   const [showFullDesc, setShowFullDesc] = useState(false)
   const { pumpfun, heliusMeta, coingeckoExtra } = data
 
