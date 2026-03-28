@@ -19,7 +19,7 @@ interface PremiumCardProps {
   projects: Project[]
 }
 
-function PremiumLogo({ src, name }: { src: string; name: string }) {
+function PremiumLogo({ src, name }: { src: string | null; name: string }) {
   const [imgError, setImgError] = useState(false)
 
   if (!src || imgError) {

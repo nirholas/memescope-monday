@@ -139,7 +139,7 @@ export async function generateMetadata(
       title: `${projectData.name} on Memescope Monday`,
       description: stripHtml(projectData.description),
       images: [
-        projectData.productImage || projectData.coverImageUrl || projectData.logoUrl,
+        projectData.productImage || projectData.coverImageUrl || projectData.logoUrl || "",
         ...previousImages,
       ],
     },
@@ -147,7 +147,7 @@ export async function generateMetadata(
       card: "summary_large_image",
       title: `${projectData.name} on Memescope Monday`,
       description: stripHtml(projectData.description),
-      images: [projectData.productImage || projectData.logoUrl],
+      images: [projectData.productImage || projectData.logoUrl || ""],
     },
   }
 }

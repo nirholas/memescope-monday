@@ -12,7 +12,7 @@ interface WinnerCardProps {
   name: string
   slug: string
   description: string
-  thumbnail: string
+  thumbnail: string | null
   dailyRanking: number | null
   upvoteCount: number
   commentCount: number
