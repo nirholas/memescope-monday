@@ -16,12 +16,6 @@ const resourcesLinks = [
   { title: "Blog", href: "/blog" },
 ]
 
-const legalLinks = [
-  { title: "Terms of Service", href: "/legal/terms" },
-  { title: "Privacy Policy", href: "/legal/privacy" },
-  { title: "Attribution Badges", href: "/legal/badges" },
-]
-
 const connectLinkItems = [
   {
     href: "https://github.com/nirholas/memescope-monday",
