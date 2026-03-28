@@ -7,8 +7,11 @@ import { format, parseISO } from "date-fns"
 import {
   Ban,
   Calendar,
+  CreditCard,
   Filter,
   Folder,
+  Globe,
+  Megaphone,
   MoreHorizontal,
   Plus,
   RefreshCw,
@@ -38,9 +41,11 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select"
 import {
   addCategory,
+  getAdminSponsorships,
   getAdminStatsAndUsers,
   getCategories,
   getFreeLaunchAvailability,
+  getRecentSubmissions,
 } from "@/app/actions/admin"
 
 type User = {
@@ -52,6 +57,38 @@ type User = {
   createdAt?: string
   hasLaunched?: boolean
   projectCount?: number
+}
+
+type Submission = {
+  id: string
+  name: string
+  slug: string
+  launchStatus: string
+  launchType: string | null
+  chain: string | null
+  ticker: string | null
+  paidExpedited: boolean | null
+  paidTrending: boolean | null
+  scheduledLaunchDate: Date | null
+  createdAt: Date
+  createdBy: string | null
+  userName: string | null
+  userEmail: string | null
+}
+
+type Sponsorship = {
+  id: string
+  name: string
+  description: string | null
+  websiteUrl: string
+  logoUrl: string | null
+  tier: string
+  status: string
+  stripeCustomerEmail: string | null
+  amountPaid: number | null
+  startsAt: Date
+  expiresAt: Date
+  createdAt: Date
 }
 
 export default function AdminDashboard() {
@@ -92,6 +129,8 @@ export default function AdminDashboard() {
   const [newCategory, setNewCategory] = useState("")
   const [isAddingCategory, setIsAddingCategory] = useState(false)
   const [categoryError, setCategoryError] = useState<string | null>(null)
+  const [submissions, setSubmissions] = useState<Submission[]>([])
+  const [sponsorships, setSponsorships] = useState<Sponsorship[]>([])
   const router = useRouter()
   useIsMobile()
 
@@ -99,10 +138,13 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      const [{ users, stats }, freeLaunchData] = await Promise.all([
-        getAdminStatsAndUsers(),
-        getFreeLaunchAvailability(),
-      ])
+      const [{ users, stats }, freeLaunchData, recentSubmissions, sponsorshipsData] =
+        await Promise.all([
+          getAdminStatsAndUsers(),
+          getFreeLaunchAvailability(),
+          getRecentSubmissions(),
+          getAdminSponsorships(),
+        ])
       const mappedUsers = users.map((u) => ({
         ...u,
         role: u.role ?? undefined,
@@ -112,6 +154,8 @@ export default function AdminDashboard() {
       setFilteredUsers(mappedUsers)
       setStats(stats)
       setFreeLaunchAvailability(freeLaunchData.firstAvailableDate)
+      setSubmissions(recentSubmissions)
+      setSponsorships(sponsorshipsData)
     } catch {
       setUsers([])
       setFilteredUsers([])
@@ -126,6 +170,8 @@ export default function AdminDashboard() {
         newPremiumPlusLaunchesToday: 0,
       })
       setFreeLaunchAvailability(null)
+      setSubmissions([])
+      setSponsorships([])
     }
     setLoading(false)
   }
@@ -604,6 +650,307 @@ export default function AdminDashboard() {
             ))}
           </div>
         </div>
+      </div>
+
+      {/* Recent Submissions */}
+      <div className="bg-card overflow-hidden rounded-lg border">
+        <div className="flex items-center justify-between border-b p-3">
+          <div className="flex items-center gap-2">
+            <Folder className="text-muted-foreground h-4 w-4" />
+            <h2 className="text-sm font-medium">Recent Submissions</h2>
+            <span className="text-muted-foreground text-xs">({submissions.length})</span>
+          </div>
+        </div>
+        {submissions.length === 0 ? (
+          <div className="text-muted-foreground p-4 text-center text-sm">No submissions yet</div>
+        ) : (
+          <>
+            <div className="hidden sm:block">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/40">
+                    <tr>
+                      <th className="text-muted-foreground p-2 text-left text-xs font-medium">
+                        Project
+                      </th>
+                      <th className="text-muted-foreground p-2 text-left text-xs font-medium">
+                        Submitted By
+                      </th>
+                      <th className="text-muted-foreground p-2 text-center text-xs font-medium">
+                        Type
+                      </th>
+                      <th className="text-muted-foreground p-2 text-center text-xs font-medium">
+                        Status
+                      </th>
+                      <th className="text-muted-foreground p-2 text-center text-xs font-medium">
+                        Paid
+                      </th>
+                      <th className="text-muted-foreground p-2 text-right text-xs font-medium">
+                        Date
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {submissions.map((sub) => (
+                      <tr key={sub.id} className="hover:bg-muted/10 border-t">
+                        <td className="max-w-[150px] p-2">
+                          <div className="truncate font-medium">{sub.name}</div>
+                          <div className="text-muted-foreground truncate text-xs">
+                            {sub.ticker && `$${sub.ticker}`}
+                            {sub.chain && ` · ${sub.chain}`}
+                          </div>
+                        </td>
+                        <td className="max-w-[140px] p-2">
+                          <div className="truncate text-sm">{sub.userName || "—"}</div>
+                          <div className="text-muted-foreground truncate text-xs">
+                            {sub.userEmail}
+                          </div>
+                        </td>
+                        <td className="p-2 text-center">
+                          <Badge
+                            variant={
+                              sub.launchType === "premium_plus"
+                                ? "default"
+                                : sub.launchType === "premium"
+                                  ? "secondary"
+                                  : "outline"
+                            }
+                            className="text-xs"
+                          >
+                            {sub.launchType || "free"}
+                          </Badge>
+                        </td>
+                        <td className="p-2 text-center">
+                          <Badge
+                            variant={
+                              sub.launchStatus === "payment_pending"
+                                ? "secondary"
+                                : sub.launchStatus === "payment_failed"
+                                  ? "destructive"
+                                  : sub.launchStatus === "launched"
+                                    ? "default"
+                                    : "outline"
+                            }
+                            className="text-xs"
+                          >
+                            {sub.launchStatus}
+                          </Badge>
+                        </td>
+                        <td className="p-2 text-center">
+                          {sub.paidExpedited || sub.paidTrending ? (
+                            <div className="flex items-center justify-center gap-1">
+                              <CreditCard className="h-3.5 w-3.5 text-green-500" />
+                              <span className="text-xs text-green-600">
+                                {sub.paidExpedited && sub.paidTrending
+                                  ? "Bundle"
+                                  : sub.paidExpedited
+                                    ? "Expedited"
+                                    : "Trending"}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">—</span>
+                          )}
+                        </td>
+                        <td className="text-muted-foreground p-2 text-right text-xs">
+                          {format(new Date(sub.createdAt), "MMM d, HH:mm")}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div className="divide-y sm:hidden">
+              {submissions.map((sub) => (
+                <div key={sub.id} className="p-3">
+                  <div className="flex items-start justify-between">
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-medium">{sub.name}</div>
+                      <div className="text-muted-foreground text-xs">
+                        by {sub.userName || "Unknown"} · {sub.userEmail}
+                      </div>
+                    </div>
+                    <span className="text-muted-foreground ml-2 text-xs">
+                      {format(new Date(sub.createdAt), "MMM d")}
+                    </span>
+                  </div>
+                  <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                    <Badge
+                      variant={
+                        sub.launchType === "premium_plus"
+                          ? "default"
+                          : sub.launchType === "premium"
+                            ? "secondary"
+                            : "outline"
+                      }
+                      className="text-xs"
+                    >
+                      {sub.launchType || "free"}
+                    </Badge>
+                    <Badge
+                      variant={
+                        sub.launchStatus === "payment_pending"
+                          ? "secondary"
+                          : sub.launchStatus === "payment_failed"
+                            ? "destructive"
+                            : "outline"
+                      }
+                      className="text-xs"
+                    >
+                      {sub.launchStatus}
+                    </Badge>
+                    {(sub.paidExpedited || sub.paidTrending) && (
+                      <Badge
+                        variant="outline"
+                        className="border-green-200 bg-green-50 text-xs text-green-600"
+                      >
+                        <CreditCard className="mr-1 h-3 w-3" />
+                        Paid
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Sponsorships */}
+      <div className="bg-card overflow-hidden rounded-lg border">
+        <div className="flex items-center justify-between border-b p-3">
+          <div className="flex items-center gap-2">
+            <Megaphone className="text-muted-foreground h-4 w-4" />
+            <h2 className="text-sm font-medium">Sponsorships</h2>
+            <span className="text-muted-foreground text-xs">
+              ({sponsorships.filter((s) => s.status === "active").length} active)
+            </span>
+          </div>
+        </div>
+        {sponsorships.length === 0 ? (
+          <div className="text-muted-foreground p-4 text-center text-sm">
+            No sponsorships yet
+          </div>
+        ) : (
+          <>
+            <div className="hidden sm:block">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/40">
+                    <tr>
+                      <th className="text-muted-foreground p-2 text-left text-xs font-medium">
+                        Sponsor
+                      </th>
+                      <th className="text-muted-foreground p-2 text-center text-xs font-medium">
+                        Tier
+                      </th>
+                      <th className="text-muted-foreground p-2 text-center text-xs font-medium">
+                        Status
+                      </th>
+                      <th className="text-muted-foreground p-2 text-center text-xs font-medium">
+                        Amount
+                      </th>
+                      <th className="text-muted-foreground p-2 text-right text-xs font-medium">
+                        Expires
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sponsorships.map((sp) => (
+                      <tr key={sp.id} className="hover:bg-muted/10 border-t">
+                        <td className="max-w-[180px] p-2">
+                          <div className="truncate font-medium">{sp.name}</div>
+                          <div className="text-muted-foreground flex items-center gap-1 truncate text-xs">
+                            <Globe className="h-3 w-3" />
+                            {sp.websiteUrl}
+                          </div>
+                          {sp.stripeCustomerEmail && (
+                            <div className="text-muted-foreground truncate text-xs">
+                              {sp.stripeCustomerEmail}
+                            </div>
+                          )}
+                        </td>
+                        <td className="p-2 text-center">
+                          <Badge
+                            variant={sp.tier === "monthly" ? "default" : "secondary"}
+                            className="text-xs"
+                          >
+                            {sp.tier}
+                          </Badge>
+                        </td>
+                        <td className="p-2 text-center">
+                          <Badge
+                            variant={
+                              sp.status === "active"
+                                ? "outline"
+                                : sp.status === "expired"
+                                  ? "secondary"
+                                  : "destructive"
+                            }
+                            className={
+                              sp.status === "active"
+                                ? "border-green-200 bg-green-50 text-xs text-green-600"
+                                : "text-xs"
+                            }
+                          >
+                            {sp.status}
+                          </Badge>
+                        </td>
+                        <td className="p-2 text-center text-sm">
+                          ${((sp.amountPaid || 0) / 100).toFixed(0)}
+                        </td>
+                        <td className="text-muted-foreground p-2 text-right text-xs">
+                          {format(new Date(sp.expiresAt), "MMM d, yyyy")}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div className="divide-y sm:hidden">
+              {sponsorships.map((sp) => (
+                <div key={sp.id} className="p-3">
+                  <div className="flex items-start justify-between">
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-medium">{sp.name}</div>
+                      <div className="text-muted-foreground truncate text-xs">{sp.websiteUrl}</div>
+                    </div>
+                    <Badge
+                      variant={
+                        sp.status === "active"
+                          ? "outline"
+                          : sp.status === "expired"
+                            ? "secondary"
+                            : "destructive"
+                      }
+                      className={
+                        sp.status === "active"
+                          ? "border-green-200 bg-green-50 text-xs text-green-600"
+                          : "text-xs"
+                      }
+                    >
+                      {sp.status}
+                    </Badge>
+                  </div>
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <Badge
+                      variant={sp.tier === "monthly" ? "default" : "secondary"}
+                      className="text-xs"
+                    >
+                      {sp.tier}
+                    </Badge>
+                    <span className="text-muted-foreground text-xs">
+                      ${((sp.amountPaid || 0) / 100).toFixed(0)} · expires{" "}
+                      {format(new Date(sp.expiresAt), "MMM d")}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

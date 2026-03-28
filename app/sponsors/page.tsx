@@ -9,7 +9,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
-import { Button } from "@/components/ui/button"
+import { SponsorCheckoutButton } from "@/components/pricing/sponsor-checkout-button"
 import { getLast30DaysPageviews, getLast30DaysVisitors } from "@/app/actions/plausible"
 
 export const metadata = {
@@ -130,11 +130,7 @@ export default async function SponsorsPage() {
               </ul>
             </div>
             <div className="mt-auto pt-3">
-              <Button variant="outline" size="lg" className="w-full" asChild>
-                <Link href="mailto:contact@open-launch.com?subject=Weekly%20Sponsorship%20Inquiry">
-                  Sponsor for a Week
-                </Link>
-              </Button>
+              <SponsorCheckoutButton tier="sponsor_weekly" label="Sponsor for a Week" />
             </div>
           </div>
 
@@ -178,11 +174,7 @@ export default async function SponsorsPage() {
               </ul>
             </div>
             <div className="mt-auto pt-3">
-              <Button size="lg" className="w-full" asChild>
-                <Link href="mailto:contact@open-launch.com?subject=Monthly%20Sponsorship%20Inquiry">
-                  Sponsor for a Month
-                </Link>
-              </Button>
+              <SponsorCheckoutButton tier="sponsor_monthly" label="Sponsor for a Month" highlighted />
             </div>
           </div>
         </div>

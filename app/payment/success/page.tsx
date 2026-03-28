@@ -15,6 +15,7 @@ function PaymentSuccessContent() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [projectSlug, setProjectSlug] = useState<string | null>(null)
+  const [isSponsor, setIsSponsor] = useState(false)
   const [countdown, setCountdown] = useState(5)
 
   // Délai de redirection à 5 secondes
@@ -24,7 +25,7 @@ function PaymentSuccessContent() {
   useEffect(() => {
     let timer: NodeJS.Timeout
 
-    if (projectSlug && countdown > 0) {
+    if ((projectSlug || isSponsor) && countdown > 0) {
       timer = setInterval(() => {
         setCountdown((prev) => prev - 1)
       }, 1000)
@@ -33,7 +34,7 @@ function PaymentSuccessContent() {
     return () => {
       if (timer) clearInterval(timer)
     }
-  }, [projectSlug, countdown])
+  }, [projectSlug, isSponsor, countdown])
 
   useEffect(() => {
     const checkPaymentStatus = async () => {
@@ -58,14 +59,21 @@ function PaymentSuccessContent() {
         }
 
         if (data.status === "complete") {
-          // Payment successful, store the project slug for redirection
           setIsLoading(false)
-          setProjectSlug(data.projectSlug)
 
-          // Redirect after a delay to show success message
-          setTimeout(() => {
-            router.push(`/projects/${data.projectSlug}`)
-          }, redirectDelay)
+          if (data.type === "sponsor") {
+            // Sponsorship payment
+            setIsSponsor(true)
+            setTimeout(() => {
+              router.push("/sponsors")
+            }, redirectDelay)
+          } else {
+            // Project payment
+            setProjectSlug(data.projectSlug)
+            setTimeout(() => {
+              router.push(`/projects/${data.projectSlug}`)
+            }, redirectDelay)
+          }
         } else if (data.status === "pending") {
           setError("Votre paiement est en cours de traitement. Veuillez patienter un moment...")
           setIsLoading(false)
@@ -115,7 +123,7 @@ function PaymentSuccessContent() {
                 />
               </div>
             </motion.div>
-          ) : projectSlug ? (
+          ) : projectSlug || isSponsor ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -130,15 +138,20 @@ function PaymentSuccessContent() {
               <h1 className="mb-3 text-2xl font-bold">Payment Successful</h1>
 
               <p className="text-muted-foreground mb-8">
-                Your premium project launch has been successfully scheduled and will be featured on
-                our platform on the selected date.
+                {isSponsor
+                  ? "Your sponsorship has been activated! Your brand will be featured on our platform."
+                  : "Your premium project launch has been successfully scheduled and will be featured on our platform on the selected date."}
               </p>
 
               <div className="flex flex-col items-center">
                 <div className="border-muted mb-3 flex h-8 w-8 items-center justify-center rounded-full border">
                   <span className="text-sm font-medium">{countdown}</span>
                 </div>
-                <p className="text-muted-foreground text-sm">Redirecting to your project page...</p>
+                <p className="text-muted-foreground text-sm">
+                  {isSponsor
+                    ? "Redirecting to sponsors page..."
+                    : "Redirecting to your project page..."}
+                </p>
               </div>
             </motion.div>
           ) : error ? (

@@ -25,6 +25,19 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 })
     }
 
+    // Check if this is a sponsorship payment
+    const tier = session.metadata?.tier
+    if (tier === "sponsor_weekly" || tier === "sponsor_monthly") {
+      if (session.payment_status === "paid") {
+        return NextResponse.json({
+          status: "complete",
+          type: "sponsor",
+          sponsorName: session.metadata?.sponsorName,
+        })
+      }
+      return NextResponse.json({ status: session.payment_status === "unpaid" ? "pending" : "failed" })
+    }
+
     // Récupérer l'ID du projet depuis la session
     const projectId = session.client_reference_id
 
