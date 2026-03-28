@@ -78,6 +78,9 @@ export function RichTextEditor({
     return null
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const chain = () => editor.chain().focus() as any
+
   return (
     <div
       className={cn(
@@ -91,7 +94,7 @@ export function RichTextEditor({
           type="button"
           variant="ghost"
           size="sm"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+          onClick={() => chain().toggleHeading({ level: 1 }).run()}
           className={cn("h-8 px-2", editor.isActive("heading", { level: 1 }) && "bg-muted")}
         >
           <RiH1 className="h-4 w-4" />
@@ -101,7 +104,7 @@ export function RichTextEditor({
           type="button"
           variant="ghost"
           size="sm"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          onClick={() => chain().toggleHeading({ level: 2 }).run()}
           className={cn("h-8 px-2", editor.isActive("heading", { level: 2 }) && "bg-muted")}
         >
           <RiH2 className="h-4 w-4" />
@@ -113,8 +116,7 @@ export function RichTextEditor({
           type="button"
           variant="ghost"
           size="sm"
-          // @ts-expect-error - toggleBold exists at runtime via StarterKit but types are mismatched
-          onClick={() => editor.chain().focus().toggleBold().run()}
+          onClick={() => chain().toggleBold().run()}
           className={cn("h-8 px-2", editor.isActive("bold") && "bg-muted")}
         >
           <RiBold className="h-4 w-4" />
@@ -124,7 +126,7 @@ export function RichTextEditor({
           type="button"
           variant="ghost"
           size="sm"
-          onClick={() => editor.chain().focus().toggleItalic().run()}
+          onClick={() => chain().toggleItalic().run()}
           className={cn("h-8 px-2", editor.isActive("italic") && "bg-muted")}
         >
           <RiItalic className="h-4 w-4" />
@@ -136,7 +138,7 @@ export function RichTextEditor({
           type="button"
           variant="ghost"
           size="sm"
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
+          onClick={() => chain().toggleBulletList().run()}
           className={cn("h-8 px-2", editor.isActive("bulletList") && "bg-muted")}
         >
           <RiListUnordered className="h-4 w-4" />
@@ -146,7 +148,7 @@ export function RichTextEditor({
           type="button"
           variant="ghost"
           size="sm"
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          onClick={() => chain().toggleOrderedList().run()}
           className={cn("h-8 px-2", editor.isActive("orderedList") && "bg-muted")}
         >
           <RiListOrdered className="h-4 w-4" />
@@ -156,7 +158,7 @@ export function RichTextEditor({
           type="button"
           variant="ghost"
           size="sm"
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
+          onClick={() => chain().toggleBlockquote().run()}
           className={cn("h-8 px-2", editor.isActive("blockquote") && "bg-muted")}
         >
           <RiDoubleQuotesL className="h-4 w-4" />
