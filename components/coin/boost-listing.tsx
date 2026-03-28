@@ -1,27 +1,30 @@
-import Link from "next/link"
+"use client"
+
+import { useState } from "react"
 
 import { CheckoutButton } from "@/components/pricing/checkout-button"
 
 export function BoostListing() {
+  const [selected, setSelected] = useState<string | null>(null)
+
   const tiers = [
     {
-      name: "Fast Track",
+      name: "Expedited Review",
+      price: "$19",
+      description: "Skip the queue. Reviewed within 1 hour.",
+      stripeTier: "expedited_review",
+    },
+    {
+      name: "Trending Placement",
       price: "$49",
-      description: "Listed within 12 hours + trending badge.",
-      stripeTier: "fast_track",
+      description: "24h featured in the Trending section.",
+      stripeTier: "trending_placement",
     },
     {
-      name: "Sponsorship",
-      price: "$99",
-      description: "7-day featured placement on homepage.",
-      stripeTier: "sponsorship",
-    },
-    {
-      name: "Premium",
-      price: "$399",
-      description: "30-day top placement across all pages.",
-      stripeTier: "premium",
-      highlight: true,
+      name: "Bundle (Both)",
+      price: "$59",
+      description: "Expedited review + 24h trending placement.",
+      stripeTier: "bundle",
     },
   ]
 
@@ -30,34 +33,52 @@ export function BoostListing() {
       <div>
         <h3 className="text-sm font-semibold">Boost Your Listing</h3>
         <p className="text-muted-foreground mt-0.5 text-xs">
-          Get more visibility for your coin.{" "}
-          <Link href="/pricing" className="hover:text-foreground underline">
-            See all plans
-          </Link>
+          Get more visibility for your coin. Pay with crypto or card.
         </p>
       </div>
 
       <div className="space-y-2">
         {tiers.map((tier) => (
-          <div
+          <button
             key={tier.name}
-            className={`rounded-lg border p-3 ${
-              tier.highlight ? "border-primary/40 bg-primary/5" : "border-border/60"
+            onClick={() => setSelected(tier.stripeTier)}
+            className={`w-full rounded-lg border p-3 text-left transition-colors ${
+              selected === tier.stripeTier
+                ? "border-primary bg-primary/5"
+                : "border-border/60 hover:border-border"
             }`}
           >
-            <div className="mb-1.5 flex items-center justify-between">
-              <span className="text-sm font-medium">{tier.name}</span>
-              <span className="text-primary text-sm font-bold">{tier.price}</span>
+            <div className="flex items-center gap-3">
+              <div
+                className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full border-2 ${
+                  selected === tier.stripeTier
+                    ? "border-primary"
+                    : "border-muted-foreground/40"
+                }`}
+              >
+                {selected === tier.stripeTier && (
+                  <div className="bg-primary h-2 w-2 rounded-full" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">{tier.name}</span>
+                  <span className="text-foreground text-sm font-bold">{tier.price}</span>
+                </div>
+                <p className="text-muted-foreground mt-0.5 text-xs">{tier.description}</p>
+              </div>
             </div>
-            <p className="text-muted-foreground mb-2 text-xs">{tier.description}</p>
-            <CheckoutButton
-              tier={tier.stripeTier}
-              label={`Pay ${tier.price}`}
-              highlighted={tier.highlight}
-            />
-          </div>
+          </button>
         ))}
       </div>
+
+      {selected && (
+        <CheckoutButton
+          tier={selected}
+          label={`Pay ${tiers.find((t) => t.stripeTier === selected)?.price}`}
+          highlighted
+        />
+      )}
     </div>
   )
 }

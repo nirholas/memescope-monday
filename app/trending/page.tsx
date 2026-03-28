@@ -6,7 +6,7 @@ import { auth } from "@/lib/auth"
 import { PROJECT_LIMITS_VARIABLES } from "@/lib/constants"
 import { Button } from "@/components/ui/button"
 // import { RiFilterLine, RiArrowDownSLine } from "@remixicon/react";
-import { ProjectCard } from "@/components/home/project-card"
+import { TrendingProjectCard } from "@/components/home/trending-project-card"
 import { getMonthBestProjects, getTopVotedProjects, getYesterdayProjects } from "@/app/actions/home"
 import { getTopCategories } from "@/app/actions/projects"
 
@@ -24,6 +24,9 @@ interface ProjectSummary {
   createdAt: Date | string
   userHasUpvoted?: boolean
   categories?: { id: string; name: string }[]
+  chain?: string | null
+  ticker?: string | null
+  marketCap?: number | null
 }
 
 export const metadata = {
@@ -35,31 +38,33 @@ export const metadata = {
 function TrendingDataSkeleton() {
   return (
     <div className="space-y-3 sm:space-y-4">
-      <div className="px-3 sm:px-4">
+      <div>
         <div className="bg-muted h-8 w-64 animate-pulse rounded"></div>
       </div>
-      <div className="-mx-3 flex flex-col sm:-mx-4">
-        {Array(5)
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {Array(6)
           .fill(0)
           .map((_, index) => (
             <div
               key={index}
-              className="mx-3 animate-pulse rounded-xl border border-zinc-100 bg-white/70 p-3 shadow-sm sm:mx-4 sm:p-4 dark:border-zinc-800/50 dark:bg-zinc-900/30"
+              className="animate-pulse rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
             >
-              <div className="flex items-start gap-3 sm:gap-4">
-                <div className="flex-shrink-0">
-                  <div className="bg-muted h-12 w-12 rounded-md sm:h-14 sm:w-14"></div>
+              <div className="flex items-start gap-3">
+                <div className="bg-muted h-12 w-12 rounded-lg"></div>
+                <div className="bg-muted h-12 w-12 rounded-lg"></div>
+                <div className="min-w-0 flex-1">
+                  <div className="bg-muted mb-1 h-5 w-2/3 rounded"></div>
+                  <div className="bg-muted h-3 w-1/3 rounded"></div>
                 </div>
-                <div className="min-w-0 flex-grow">
-                  <div className="flex flex-col">
-                    <div className="bg-muted mb-2 h-5 w-1/3 rounded"></div>
-                    <div className="bg-muted h-4 w-2/3 rounded"></div>
-                  </div>
-                </div>
-                <div className="flex flex-shrink-0 flex-col items-end gap-2 sm:flex-row sm:items-start">
-                  <div className="bg-muted h-10 w-10 rounded-xl border-2 border-dashed"></div>
-                  <div className="bg-muted hidden h-10 w-10 rounded-xl border-2 border-dashed sm:block"></div>
-                </div>
+              </div>
+              <div className="bg-muted mt-3 h-10 w-full rounded"></div>
+              <div className="mt-3 flex items-center justify-between">
+                <div className="bg-muted h-5 w-1/3 rounded-full"></div>
+                <div className="bg-muted h-4 w-1/4 rounded"></div>
+              </div>
+              <div className="mt-2 flex items-center justify-between border-t border-gray-100 pt-2 dark:border-zinc-800">
+                <div className="bg-muted h-4 w-1/4 rounded"></div>
+                <div className="bg-muted h-4 w-1/5 rounded"></div>
               </div>
             </div>
           ))}
@@ -103,18 +108,24 @@ async function TrendingData({
           No projects found for this period.
         </div>
       ) : (
-        <div className="-mx-3 flex flex-col sm:-mx-4">
-          {projects.map((project: ProjectSummary, index: number) => (
-            <ProjectCard
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {projects.map((project: ProjectSummary) => (
+            <TrendingProjectCard
               key={project.id}
-              {...project}
+              id={project.id}
+              slug={project.slug}
+              name={project.name}
               description={project.description || ""}
-              websiteUrl={project.websiteUrl ?? undefined}
-              commentCount={project.commentCount ?? 0}
-              index={index}
+              logoUrl={project.logoUrl}
+              upvoteCount={project.upvoteCount}
+              launchStatus={project.launchStatus}
               userHasUpvoted={project.userHasUpvoted ?? false}
               categories={project.categories || []}
               isAuthenticated={isAuthenticated}
+              chain={project.chain}
+              ticker={project.ticker}
+              marketCap={project.marketCap}
+              createdAt={project.createdAt}
             />
           ))}
         </div>

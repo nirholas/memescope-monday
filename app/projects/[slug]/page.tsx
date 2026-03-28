@@ -6,11 +6,14 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 
 import {
+  RiArrowRightSLine,
   RiGithubFill,
   RiGlobalLine,
   RiHashtag,
+  RiHomeLine,
   RiRocketLine,
   RiSendPlaneFill,
+  RiStarLine,
   RiTwitterFill,
   RiVipCrownLine,
 } from "@remixicon/react"
@@ -24,11 +27,13 @@ import { RichTextDisplay } from "@/components/ui/rich-text-editor"
 import { BoostListing } from "@/components/coin/boost-listing"
 import { ChartEmbed } from "@/components/coin/chart-embed"
 import { CopyAddress } from "@/components/coin/copy-address"
+import { DisclaimerCard } from "@/components/coin/disclaimer-card"
+import { NewsSentiment } from "@/components/coin/news-sentiment"
 import { RelatedCoins } from "@/components/coin/related-coins"
 import { SafetyScore } from "@/components/coin/safety-score"
 import { SocialBuzz } from "@/components/coin/social-buzz"
+import { Trollbox } from "@/components/coin/trollbox"
 import { EditButton } from "@/components/project/edit-button"
-import { ProjectComments } from "@/components/project/project-comments"
 import { ProjectImageWithLoader } from "@/components/project/project-image-with-loader"
 import { ShareButton } from "@/components/project/share-button"
 import { UpvoteButton } from "@/components/project/upvote-button"
@@ -64,7 +69,7 @@ function getChainBadge(chain: string): { label: string; icon: string; className:
       return {
         label: "Solana",
         icon: "◎",
-        className: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
+        className: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300",
       }
     case "base":
       return {
@@ -182,14 +187,156 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     dailyRanking: projectData.dailyRanking,
   })
 
+  // Calculate safety score data for inline badge
+  const safetyGrade = coinDetail ? (() => {
+    const { market, dexscreener, pumpfun } = coinDetail
+    let totalScore = 0
+    let criteriaCount = 6
+
+    // Liquidity
+    let s = 0
+    if (market.liquidity !== null) {
+      if (market.liquidity >= 100_000) s = 100
+      else if (market.liquidity >= 50_000) s = 80
+      else if (market.liquidity >= 10_000) s = 60
+      else if (market.liquidity >= 1_000) s = 40
+      else if (market.liquidity > 0) s = 20
+    }
+    totalScore += s
+
+    // Trading Activity
+    s = 0
+    if (dexscreener?.txns) {
+      const total24h = dexscreener.txns.h24.buys + dexscreener.txns.h24.sells
+      if (total24h >= 1000) s = 100
+      else if (total24h >= 500) s = 80
+      else if (total24h >= 100) s = 60
+      else if (total24h >= 20) s = 40
+      else if (total24h > 0) s = 20
+    }
+    totalScore += s
+
+    // Buy/Sell Ratio
+    s = 50
+    if (dexscreener?.txns) {
+      const buys = dexscreener.txns.h24.buys
+      const sells = dexscreener.txns.h24.sells
+      const total = buys + sells
+      if (total > 0) {
+        const buyRatio = buys / total
+        if (buyRatio >= 0.6) s = 80
+        else if (buyRatio >= 0.45) s = 60
+        else if (buyRatio >= 0.3) s = 40
+        else s = 20
+      }
+    }
+    totalScore += s
+
+    // Social Presence
+    s = 0
+    const hasWebsite = !!(pumpfun?.website || dexscreener?.info?.websites?.length)
+    const hasTwitter = !!(pumpfun?.twitter || dexscreener?.info?.socials?.some((x: { type: string }) => x.type === "twitter"))
+    if (hasWebsite) s += 40
+    if (hasTwitter) s += 40
+    if (pumpfun?.replyCount && pumpfun.replyCount > 10) s += 20
+    s = Math.min(s, 100)
+    totalScore += s
+
+    // Pair Age
+    s = 50
+    if (pumpfun?.createdTimestamp) {
+      const ageDays = (Date.now() - pumpfun.createdTimestamp) / (1000 * 60 * 60 * 24)
+      if (ageDays >= 30) s = 100
+      else if (ageDays >= 14) s = 80
+      else if (ageDays >= 7) s = 60
+      else if (ageDays >= 1) s = 40
+      else s = 20
+    }
+    totalScore += s
+
+    // Community Votes
+    s = 0
+    if (projectData.upvoteCount >= 50) s = 100
+    else if (projectData.upvoteCount >= 20) s = 80
+    else if (projectData.upvoteCount >= 10) s = 60
+    else if (projectData.upvoteCount >= 5) s = 40
+    else if (projectData.upvoteCount >= 1) s = 20
+    totalScore += s
+
+    const total = Math.round(totalScore / criteriaCount)
+    let grade: string
+    if (total >= 80) grade = "A"
+    else if (total >= 60) grade = "B"
+    else if (total >= 40) grade = "C"
+    else if (total >= 20) grade = "D"
+    else grade = "F"
+    return { total, grade }
+  })() : null
+
+  // Calculate social buzz for inline badge
+  const buzzLevel = coinDetail ? (() => {
+    let score = 0
+    const { dexscreener, pumpfun } = coinDetail
+    if (dexscreener?.volume) {
+      if (dexscreener.volume.h24 >= 1_000_000) score += 30
+      else if (dexscreener.volume.h24 >= 100_000) score += 20
+      else if (dexscreener.volume.h24 >= 10_000) score += 10
+    }
+    if (dexscreener?.txns) {
+      const total = dexscreener.txns.h24.buys + dexscreener.txns.h24.sells
+      if (total >= 1000) score += 25
+      else if (total >= 500) score += 15
+      else if (total >= 100) score += 10
+      else if (total >= 20) score += 5
+    }
+    if (pumpfun?.replyCount) {
+      if (pumpfun.replyCount >= 100) score += 20
+      else if (pumpfun.replyCount >= 50) score += 15
+      else if (pumpfun.replyCount >= 10) score += 10
+      else if (pumpfun.replyCount > 0) score += 5
+    }
+    if (projectData.upvoteCount >= 50) score += 15
+    else if (projectData.upvoteCount >= 20) score += 10
+    else if (projectData.upvoteCount >= 5) score += 5
+    score = Math.min(score, 100)
+    if (score >= 80) return { label: "Viral", emoji: "🔥" }
+    if (score >= 50) return { label: "High", emoji: "🚀" }
+    if (score >= 30) return { label: "Medium", emoji: "📈" }
+    if (score >= 10) return { label: "Low", emoji: "😴" }
+    return { label: "Dead", emoji: "💀" }
+  })() : null
+
+  const isFeatured = projectData.featuredOnHomepage || projectData.paidTrending || projectData.paidExpedited
+
+  const gradeColorClass = safetyGrade ? ({
+    A: "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800",
+    B: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800",
+    C: "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800",
+    D: "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800",
+    F: "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800",
+  }[safetyGrade.grade] || "bg-gray-100 text-gray-700") : ""
+
   return (
     <div className="bg-background min-h-screen">
       <div className="mx-auto max-w-6xl px-6">
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-1 py-4 text-sm">
+          <Link href="/" className="text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors">
+            Home
+          </Link>
+          <RiArrowRightSLine className="text-muted-foreground h-4 w-4" />
+          <Link href="/coins" className="text-muted-foreground hover:text-foreground transition-colors">
+            Coins
+          </Link>
+          <RiArrowRightSLine className="text-muted-foreground h-4 w-4" />
+          <span className="text-foreground font-medium">{projectData.name}</span>
+        </nav>
+
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {/* Main Content - 2 colonnes */}
           <div className="lg:col-span-2">
             {/* Modern Clean Header */}
-            <div className="py-6">
+            <div className="pb-6">
               {/* Version Desktop */}
               <div className="hidden items-center justify-between md:flex">
                 {/* Left side: Logo + Title + Categories */}
@@ -209,29 +356,10 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
                   {/* Title and info */}
                   <div className="min-w-0 flex-1">
-                    <div className="mb-1 flex items-center gap-2">
+                    <div className="mb-1 flex flex-wrap items-center gap-2">
                       <h1 className="text-foreground truncate text-xl font-bold">
                         {projectData.name}
                       </h1>
-                      {projectData.ticker && (
-                        <span className="text-muted-foreground ml-2 text-lg">
-                          ${projectData.ticker}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Categories */}
-                    <div className="flex flex-wrap items-center gap-1">
-                      {projectData.categories.map((category) => (
-                        <Link
-                          key={category.id}
-                          href={`/categories?category=${category.id}`}
-                          className="bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors"
-                        >
-                          <RiHashtag className="h-3 w-3" />
-                          {category.name}
-                        </Link>
-                      ))}
                       {projectData.chain &&
                         (() => {
                           const badge = getChainBadge(projectData.chain)
@@ -243,6 +371,54 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                             </span>
                           )
                         })()}
+                      {isFeatured && (
+                        <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-300">
+                          Featured
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Ticker + inline badges */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      {projectData.ticker && (
+                        <span className="text-muted-foreground text-lg font-medium">
+                          ${projectData.ticker}
+                        </span>
+                      )}
+
+                      {/* Upvote count */}
+                      <div className="flex items-center gap-1">
+                        <span className="text-muted-foreground text-sm">▲</span>
+                        <span className="text-foreground text-sm font-medium">{projectData.upvoteCount}</span>
+                      </div>
+
+                      {/* Safety score pill */}
+                      {safetyGrade && (
+                        <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-bold ${gradeColorClass}`}>
+                          {safetyGrade.grade} {safetyGrade.total}/100
+                        </span>
+                      )}
+
+                      {/* Social buzz badge */}
+                      {buzzLevel && (
+                        <span className="bg-muted text-muted-foreground inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium">
+                          {buzzLevel.emoji} {buzzLevel.label}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Categories */}
+                    <div className="mt-1 flex flex-wrap items-center gap-1">
+                      {projectData.categories.map((category) => (
+                        <Link
+                          key={category.id}
+                          href={`/categories?category=${category.id}`}
+                          className="bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors"
+                        >
+                          <RiHashtag className="h-3 w-3" />
+                          {category.name}
+                        </Link>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -294,10 +470,42 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     />
                   </div>
                   <div className="min-w-0 flex-1 space-y-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <h1 className="text-foreground text-xl font-bold">{projectData.name}</h1>
+                      {projectData.chain &&
+                        (() => {
+                          const badge = getChainBadge(projectData.chain)
+                          return (
+                            <span
+                              className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${badge.className}`}
+                            >
+                              {badge.icon} {badge.label}
+                            </span>
+                          )
+                        })()}
+                      {isFeatured && (
+                        <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-300">
+                          Featured
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
                       {projectData.ticker && (
-                        <span className="text-muted-foreground text-lg">${projectData.ticker}</span>
+                        <span className="text-muted-foreground text-lg font-medium">${projectData.ticker}</span>
+                      )}
+                      <div className="flex items-center gap-1">
+                        <span className="text-muted-foreground text-sm">▲</span>
+                        <span className="text-foreground text-sm font-medium">{projectData.upvoteCount}</span>
+                      </div>
+                      {safetyGrade && (
+                        <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-bold ${gradeColorClass}`}>
+                          {safetyGrade.grade} {safetyGrade.total}/100
+                        </span>
+                      )}
+                      {buzzLevel && (
+                        <span className="bg-muted text-muted-foreground inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium">
+                          {buzzLevel.emoji} {buzzLevel.label}
+                        </span>
                       )}
                     </div>
                     <div className="flex flex-wrap items-center gap-1">
@@ -311,17 +519,6 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                           {category.name}
                         </Link>
                       ))}
-                      {projectData.chain &&
-                        (() => {
-                          const badge = getChainBadge(projectData.chain)
-                          return (
-                            <span
-                              className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${badge.className}`}
-                            >
-                              {badge.icon} {badge.label}
-                            </span>
-                          )
-                        })()}
                     </div>
                   </div>
                 </div>
@@ -393,6 +590,27 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 </div>
               )}
 
+              {/* Contract Address Card */}
+              {projectData.contractAddress && (
+                <div className="border-border rounded-lg border p-4">
+                  <span className="text-muted-foreground mb-2 block text-xs font-medium tracking-wider uppercase">
+                    Contract Address
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <code className="text-foreground flex-1 truncate text-sm font-mono">
+                      {projectData.contractAddress}
+                    </code>
+                    <CopyAddress address={projectData.contractAddress} />
+                  </div>
+                </div>
+              )}
+
+              {/* About / Description */}
+              <div className="w-full">
+                <h2 className="mb-3 text-lg font-semibold">About</h2>
+                <RichTextDisplay content={projectData.description} />
+              </div>
+
               {/* Product Image / Banner */}
               {(projectData.productImage || projectData.coverImageUrl) && (
                 <ProjectImageWithLoader
@@ -400,6 +618,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                   alt={`${projectData.name} - Product Image`}
                 />
               )}
+
               {/* Price Chart */}
               {projectData.contractAddress && projectData.chain && (
                 <ChartEmbed
@@ -414,11 +633,6 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 />
               )}
 
-              {/* Description */}
-              <div className="w-full">
-                <RichTextDisplay content={projectData.description} />
-              </div>
-
               {/* Edit button pour owners */}
               {isOwner && (
                 <div>
@@ -432,22 +646,25 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 </div>
               )}
 
-              {/* Comments */}
-              <div>
-                <h2 className="mb-4 text-lg font-semibold" id="comments">
-                  Comments
-                </h2>
-                {projectData.launchStatus === "ongoing" ||
-                projectData.launchStatus === "launched" ? (
-                  <ProjectComments projectId={projectData.id} />
-                ) : (
-                  <div className="py-6 text-center">
-                    <p className="text-muted-foreground">
-                      Comments will be available once the project is launched.
-                    </p>
-                  </div>
-                )}
-              </div>
+              {/* News & Sentiment */}
+              {coinDetail && (
+                <NewsSentiment news={coinDetail.news} />
+              )}
+
+              {/* Trollbox */}
+              {projectData.launchStatus === "ongoing" ||
+              projectData.launchStatus === "launched" ? (
+                <Trollbox
+                  projectId={projectData.id}
+                  isAuthenticated={Boolean(session?.user)}
+                />
+              ) : (
+                <div className="border-border rounded-lg border p-6 text-center">
+                  <p className="text-muted-foreground">
+                    Trollbox will be available once the project is launched.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -707,7 +924,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
               {/* Safety Score */}
               {coinDetail && (
-                <div className="border-border border-t pt-4">
+                <div className="border-border rounded-lg border p-4">
                   <SafetyScore data={coinDetail} upvoteCount={projectData.upvoteCount} />
                 </div>
               )}
@@ -715,15 +932,21 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               {/* Social Buzz */}
               {coinDetail && <SocialBuzz data={coinDetail} upvoteCount={projectData.upvoteCount} />}
 
-              {/* Share */}
-              <div className="border-border border-t pt-4">
-                <ShareButton name={projectData.name} slug={projectData.slug} variant="fullWidth" />
-              </div>
+              {/* Featured listing indicator */}
+              {isFeatured && (
+                <div className="flex items-center gap-2 text-sm">
+                  <RiStarLine className="text-muted-foreground h-4 w-4" />
+                  <span className="text-muted-foreground">Featured listing</span>
+                </div>
+              )}
 
               {/* Boost Listing */}
               <div className="border-border border-t pt-4">
                 <BoostListing />
               </div>
+
+              {/* Disclaimer */}
+              <DisclaimerCard />
 
               {/* Related Coins */}
               {relatedCoins.length > 0 && (
@@ -731,6 +954,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                   <RelatedCoins coins={relatedCoins} />
                 </div>
               )}
+
+              {/* Share */}
+              <div className="border-border border-t pt-4">
+                <ShareButton name={projectData.name} slug={projectData.slug} variant="fullWidth" />
+              </div>
             </div>
           </div>
         </div>

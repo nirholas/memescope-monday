@@ -42,7 +42,7 @@ interface ProjectCardProps {
 function getChainStyle(chain: string) {
   switch (chain) {
     case "solana":
-      return "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300"
+      return "bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300"
     case "base":
       return "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
     case "bnb":

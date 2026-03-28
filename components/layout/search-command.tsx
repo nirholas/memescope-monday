@@ -274,7 +274,7 @@ export function SearchCommand() {
                     }`}
                     onClick={() => runCommand(() => router.push("/categories"))}
                   >
-                    <RiAppsLine className="mr-2 h-4 w-4 text-purple-500" />
+                    <RiAppsLine className="mr-2 h-4 w-4 text-blue-500" />
                     <span>Categories</span>
                   </div>
                 </div>

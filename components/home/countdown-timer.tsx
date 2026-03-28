@@ -84,26 +84,25 @@ export function CountdownTimer() {
   }
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 p-6 text-white shadow-lg sm:p-8">
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
-      <div className="relative">
-        <div className="mb-4 flex items-center justify-between">
+    <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
           <div>
-            <p className="mb-1 text-xs font-medium tracking-widest text-white/60 uppercase">
+            <p className="mb-1 text-xs font-medium tracking-widest text-muted-foreground uppercase">
               Next Launch
             </p>
-            <h2 className="text-lg font-bold tracking-tight sm:text-xl">
+            <h2 className="text-lg font-bold tracking-tight text-foreground sm:text-xl">
               Memescope Monday — {dateLabel}
             </h2>
           </div>
           <div className="hidden items-center gap-2 sm:flex">
-            <span className="rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-medium backdrop-blur-sm">
+            <span className="rounded-full border border-border bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
               ◎ Solana
             </span>
-            <span className="rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-medium backdrop-blur-sm">
+            <span className="rounded-full border border-border bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
               Base
             </span>
-            <span className="rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-medium backdrop-blur-sm">
+            <span className="rounded-full border border-border bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
               BNB
             </span>
           </div>
@@ -119,15 +118,15 @@ export function CountdownTimer() {
             ].map((item, i) => (
               <div key={item.label} className="flex items-center gap-3 sm:gap-4">
                 <div className="text-center">
-                  <div className="rounded-lg bg-white/15 px-3 py-2 font-mono text-2xl font-bold tabular-nums backdrop-blur-sm sm:px-4 sm:text-3xl">
+                  <div className="rounded-lg bg-muted px-3 py-2 font-mono text-2xl font-bold tabular-nums text-foreground sm:px-4 sm:text-3xl">
                     {String(item.val).padStart(2, "0")}
                   </div>
-                  <span className="mt-1 block text-[10px] font-medium tracking-wider text-white/50 uppercase">
+                  <span className="mt-1 block text-[10px] font-medium tracking-wider text-muted-foreground uppercase">
                     {item.label}
                   </span>
                 </div>
                 {i < 3 && (
-                  <span className="mb-4 text-xl font-bold text-white/30 sm:text-2xl">:</span>
+                  <span className="mb-4 text-xl font-bold text-muted-foreground/40 sm:text-2xl">:</span>
                 )}
               </div>
             ))}
@@ -135,7 +134,7 @@ export function CountdownTimer() {
 
           <Link
             href="/projects/submit"
-            className="hidden rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-purple-700 shadow-sm transition-all hover:bg-white/90 hover:shadow-md sm:block"
+            className="hidden rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md sm:block"
           >
             Submit Early
           </Link>

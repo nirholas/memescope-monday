@@ -298,6 +298,26 @@ export const seoArticle = pgTable(
   },
 )
 
+// Trollbox messages for coin pages
+export const trollboxMessage = pgTable(
+  "trollbox_message",
+  {
+    id: text("id").primaryKey(),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => project.id, { onDelete: "cascade" }),
+    userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
+    username: text("username").notNull(),
+    message: text("message").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => {
+    return {
+      projectIdx: index("trollbox_project_idx").on(table.projectId),
+    }
+  },
+)
+
 export const blogArticle = pgTable(
   "blog_article",
   {

@@ -87,7 +87,7 @@ export const MEMECOIN_CATEGORIES = [
 ] as const
 
 export const SUPPORTED_CHAINS = [
-  { id: "solana", name: "Solana", icon: "◎", color: "purple" },
+  { id: "solana", name: "Solana", icon: "◎", color: "teal" },
   { id: "base", name: "Base", icon: "🔵", color: "blue" },
   { id: "bnb", name: "BNB Chain", icon: "🟡", color: "yellow" },
   { id: "ethereum", name: "Ethereum", icon: "⟠", color: "indigo" },
