@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -85,6 +86,7 @@ export function ProjectCard({
   priceChange24h,
 }: ProjectCardProps) {
   const router = useRouter()
+  const [imgError, setImgError] = useState(false)
   const projectPageUrl = `/projects/${slug}`
 
   return (
@@ -106,7 +108,7 @@ export function ProjectCard({
         {/* Logo */}
         <div className="flex-shrink-0">
           <div className="border-border/60 bg-background relative h-14 w-14 overflow-hidden rounded-xl border shadow-sm transition-shadow group-hover:shadow-md sm:h-16 sm:w-16">
-            {logoUrl ? (
+            {logoUrl && !imgError ? (
               <Image
                 src={logoUrl}
                 alt={`${name} logo`}
@@ -114,6 +116,7 @@ export function ProjectCard({
                 className="object-cover"
                 sizes="(max-width: 640px) 56px, 64px"
                 unoptimized
+                onError={() => setImgError(true)}
               />
             ) : (
               <span className="text-muted-foreground flex h-full w-full items-center justify-center text-xl font-bold">

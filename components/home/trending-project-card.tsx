@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -90,6 +91,7 @@ export function TrendingProjectCard({
   createdAt,
 }: TrendingProjectCardProps) {
   const router = useRouter()
+  const [imgError, setImgError] = useState(false)
   const projectPageUrl = `/projects/${slug}`
   const initials = name
     .split(/\s+/)
@@ -120,7 +122,7 @@ export function TrendingProjectCard({
         {/* Logo */}
         <div className="flex-shrink-0">
           <div className="bg-muted relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg border border-gray-200 dark:border-zinc-700">
-            {logoUrl ? (
+            {logoUrl && !imgError ? (
               <Image
                 src={logoUrl}
                 alt={`${name} logo`}
@@ -128,6 +130,7 @@ export function TrendingProjectCard({
                 className="object-cover"
                 sizes="48px"
                 unoptimized
+                onError={() => setImgError(true)}
               />
             ) : (
               <span className="text-muted-foreground text-base font-bold">{initials}</span>

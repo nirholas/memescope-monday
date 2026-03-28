@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -16,6 +17,29 @@ interface Project {
 
 interface PremiumCardProps {
   projects: Project[]
+}
+
+function PremiumLogo({ src, name }: { src: string; name: string }) {
+  const [imgError, setImgError] = useState(false)
+
+  if (!src || imgError) {
+    return (
+      <span className="text-muted-foreground flex h-full w-full items-center justify-center text-xl font-bold">
+        {name.charAt(0)}
+      </span>
+    )
+  }
+
+  return (
+    <Image
+      src={src}
+      alt={name}
+      fill
+      className="rounded-md object-contain p-1"
+      unoptimized
+      onError={() => setImgError(true)}
+    />
+  )
 }
 
 export function PremiumCard({ projects }: PremiumCardProps) {
@@ -65,19 +89,7 @@ export function PremiumCard({ projects }: PremiumCardProps) {
               className="group hover:bg-muted/50 flex flex-col items-center gap-3 rounded-lg p-2 text-center transition-colors sm:items-center sm:text-left"
             >
               <div className="bg-muted relative h-12 w-12 flex-shrink-0 rounded-lg sm:h-14 sm:w-14">
-                {item.logoUrl ? (
-                  <Image
-                    src={item.logoUrl}
-                    alt={item.name}
-                    fill
-                    className="rounded-md object-contain p-1"
-                    unoptimized
-                  />
-                ) : (
-                  <span className="text-muted-foreground flex h-full w-full items-center justify-center text-xl font-bold">
-                    {item.name.charAt(0)}
-                  </span>
-                )}
+                <PremiumLogo src={item.logoUrl} name={item.name} />
                 <div className="bg-primary border-background absolute -top-2 -right-2 z-10 flex h-5 w-5 items-center justify-center rounded-full border-2">
                   <RiStarSFill className="h-3 w-3 text-white" />
                 </div>
