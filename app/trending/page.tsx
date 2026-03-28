@@ -7,8 +7,10 @@ import { PROJECT_LIMITS_VARIABLES } from "@/lib/constants"
 import { Button } from "@/components/ui/button"
 // import { RiFilterLine, RiArrowDownSLine } from "@remixicon/react";
 import { TrendingProjectCard } from "@/components/home/trending-project-card"
+import { TrendingTokens } from "@/components/home/trending-tokens"
 import { getMonthBestProjects, getTopVotedProjects, getYesterdayProjects } from "@/app/actions/home"
 import { getTopCategories } from "@/app/actions/projects"
+import { getTrendingTokens } from "@/app/actions/trending"
 
 interface ProjectSummary {
   id: string
@@ -88,15 +90,15 @@ async function TrendingData({
     projects = await getTopVotedProjects(
       PROJECT_LIMITS_VARIABLES.VIEW_ALL_PAGE_TODAY_YESTERDAY_LIMIT,
     )
-    title = "Today's Launches"
+    title = "Trending Now"
   } else if (filter === "yesterday") {
     projects = await getYesterdayProjects(
       PROJECT_LIMITS_VARIABLES.VIEW_ALL_PAGE_TODAY_YESTERDAY_LIMIT,
     )
-    title = "Yesterday's Launches"
+    title = "New Arrivals"
   } else {
     projects = await getMonthBestProjects(PROJECT_LIMITS_VARIABLES.VIEW_ALL_PAGE_MONTH_LIMIT)
-    title = "Best of the Month"
+    title = "Top Performers"
   }
 
   return (
@@ -150,7 +152,10 @@ export default async function TrendingPage({
   })
   const isAuthenticated = !!session?.user
 
-  const todayProjects = await getTopVotedProjects()
+  const [todayProjects, trendingTokens] = await Promise.all([
+    getTopVotedProjects(),
+    getTrendingTokens(),
+  ])
   const ongoingLaunches = todayProjects.filter(
     (project) => project.launchStatus === "ongoing",
   ).length
@@ -168,6 +173,11 @@ export default async function TrendingPage({
 
           {/* Sidebar */}
           <div className="top-24">
+            {/* Trending Tokens from external sources */}
+            <div className="mb-6">
+              <TrendingTokens initialData={trendingTokens} />
+            </div>
+
             {/* Quick Stats */}
             <div className="space-y-3 py-5 pt-0">
               <h3 className="flex items-center gap-2 font-semibold">Live Now</h3>
@@ -184,7 +194,7 @@ export default async function TrendingPage({
 
             {/* Time Filters */}
             <div className="space-y-3 py-5">
-              <h3 className="flex items-center gap-2 font-semibold">Time Range</h3>
+              <h3 className="flex items-center gap-2 font-semibold">Explore</h3>
               <div className="space-y-2">
                 <Link
                   href="/trending?filter=today"
@@ -192,7 +202,7 @@ export default async function TrendingPage({
                     filter === "today" ? "bg-muted font-medium" : "hover:bg-muted/40"
                   }`}
                 >
-                  Today&apos;s Launches
+                  Trending Now
                 </Link>
                 <Link
                   href="/trending?filter=yesterday"
@@ -200,7 +210,7 @@ export default async function TrendingPage({
                     filter === "yesterday" ? "bg-muted font-medium" : "hover:bg-muted/40"
                   }`}
                 >
-                  Yesterday&apos;s Launches
+                  New Arrivals
                 </Link>
                 <Link
                   href="/trending?filter=month"
@@ -208,20 +218,20 @@ export default async function TrendingPage({
                     filter === "month" ? "bg-muted font-medium" : "hover:bg-muted/40"
                   }`}
                 >
-                  This Month&apos;s Best
+                  Top Performers
                 </Link>
               </div>
             </div>
 
-            {/* Quick Access */}
+            {/* Discover More */}
             <div className="space-y-3 py-5">
-              <h3 className="flex items-center gap-2 font-semibold">Quick Access</h3>
+              <h3 className="flex items-center gap-2 font-semibold">Discover More</h3>
               <div className="space-y-2">
                 <Link
                   href="/winners"
                   className="-mx-2 flex items-center gap-2 rounded-md p-2 text-sm transition-colors hover:underline"
                 >
-                  Daily Winners
+                  Hall of Fame
                 </Link>
                 <Link
                   href="/categories"

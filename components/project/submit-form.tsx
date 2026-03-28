@@ -118,6 +118,8 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
 
   const [isUploadingLogo, setIsUploadingLogo] = useState(false)
   const [isUploadingProductImage, setIsUploadingProductImage] = useState(false)
+  const [isLookingUp, setIsLookingUp] = useState(false)
+  const [lookupDone, setLookupDone] = useState(false)
 
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([])
   const [isLoadingCategories, setIsLoadingCategories] = useState(false)
@@ -141,6 +143,44 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
       ...prev,
       [name]: value,
     }))
+  }
+
+  const lookupContract = async (address: string, chain: string) => {
+    if (!address || address.length < 20) return
+    setIsLookingUp(true)
+    setLookupDone(false)
+    try {
+      const res = await fetch(
+        `/api/coins/lookup?address=${encodeURIComponent(address)}&chain=${chain}`,
+      )
+      if (!res.ok) {
+        setIsLookingUp(false)
+        return
+      }
+      const { result } = await res.json()
+      if (!result || (!result.name && !result.ticker)) {
+        setIsLookingUp(false)
+        return
+      }
+      setFormData((prev) => ({
+        ...prev,
+        name: result.name || prev.name,
+        ticker: result.ticker || prev.ticker,
+        description: result.description || prev.description,
+        websiteUrl: result.websiteUrl || prev.websiteUrl,
+        twitterUrl: result.twitterUrl || prev.twitterUrl,
+        telegramUrl: result.telegramUrl || prev.telegramUrl,
+        pumpfunUrl: result.pumpfunUrl || prev.pumpfunUrl,
+      }))
+      if (result.logoUrl) {
+        setUploadedLogoUrl(result.logoUrl)
+      }
+      setLookupDone(true)
+    } catch {
+      // silently fail
+    } finally {
+      setIsLookingUp(false)
+    }
   }
 
   const checkWebsiteUrl = async (url: string) => {
@@ -634,6 +674,56 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
       case 1:
         return (
           <div className="space-y-6">
+            {/* Contract Address Autofill */}
+            <div className="rounded-lg border border-blue-200 bg-blue-50/50 p-4 dark:border-blue-900/50 dark:bg-blue-950/20">
+              <Label className="mb-2 block text-sm font-semibold">
+                Quick Fill from Contract Address
+              </Label>
+              <p className="text-muted-foreground mb-3 text-xs">
+                Paste your contract address and select the chain to auto-fill the form.
+              </p>
+              <div className="mb-3 flex flex-wrap gap-2">
+                {["solana", "base", "bnb", "ethereum"].map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, chain: c }))}
+                    className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                      formData.chain === c
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    }`}
+                  >
+                    {c.charAt(0).toUpperCase() + c.slice(1)}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  name="contractAddress"
+                  value={formData.contractAddress}
+                  onChange={handleInputChange}
+                  placeholder="Paste contract address or token mint..."
+                  className="flex-1 bg-white font-mono text-sm dark:bg-gray-950"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => lookupContract(formData.contractAddress, formData.chain)}
+                  disabled={isLookingUp || formData.contractAddress.length < 20}
+                  className="h-9 px-4"
+                >
+                  {isLookingUp ? <RiLoader4Line className="h-4 w-4 animate-spin" /> : "Autofill"}
+                </Button>
+              </div>
+              {lookupDone && (
+                <p className="mt-2 flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                  <RiCheckboxCircleFill className="h-3.5 w-3.5" />
+                  Form auto-filled from on-chain data. Review and edit below.
+                </p>
+              )}
+            </div>
+
             <div>
               <Label htmlFor="name">
                 Project Name <span className="text-red-500">*</span>
@@ -974,20 +1064,6 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
               </div>
               <p className="text-muted-foreground mt-1 text-xs">
                 Select the blockchain your coin is on.
-              </p>
-            </div>
-
-            <div>
-              <Label htmlFor="contractAddress">Contract Address</Label>
-              <Input
-                id="contractAddress"
-                name="contractAddress"
-                value={formData.contractAddress}
-                onChange={handleInputChange}
-                placeholder="0x... or token mint address"
-              />
-              <p className="text-muted-foreground mt-1 text-xs">
-                The on-chain contract or mint address for your token.
               </p>
             </div>
 
@@ -1590,11 +1666,15 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
                     )}
                     <p>
                       <strong>Chain:</strong>{" "}
-                      <Badge variant="secondary" className="capitalize">{formData.chain}</Badge>
+                      <Badge variant="secondary" className="capitalize">
+                        {formData.chain}
+                      </Badge>
                     </p>
                     <p>
                       <strong>Coin Type:</strong>{" "}
-                      <Badge variant="outline" className="capitalize">{formData.coinType}</Badge>
+                      <Badge variant="outline" className="capitalize">
+                        {formData.coinType}
+                      </Badge>
                     </p>
                     {formData.contractAddress && (
                       <p>

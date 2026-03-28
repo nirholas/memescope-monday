@@ -12,6 +12,14 @@ export { getCMCByContract } from "./cmc"
 export { getCryptoPanicNews } from "./cryptopanic"
 export type { PumpFunCoin, DexScreenerPair, HeliusAsset, CoinEnrichmentResult } from "./types"
 
+// Trending tokens
+export { fetchAllTrending, fetchTrendingBySource } from "./trending"
+export { getCoinGeckoTrending } from "./trending-coingecko"
+export { getDexScreenerTrending } from "./trending-dexscreener"
+export { getPumpFunTrending } from "./trending-pumpfun"
+export { getBirdeyeTrending } from "./trending-birdeye"
+export type { TrendingToken, TrendingSourceResult, TrendingData } from "./trending-types"
+
 // Coin detail page types and functions
 export {
   fetchCoinDetail,

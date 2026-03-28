@@ -96,6 +96,7 @@ export interface HeliusAsset {
 }
 
 export interface CoinEnrichmentResult {
+  name?: string
   ticker?: string
   chain?: string
   marketCap?: number

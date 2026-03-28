@@ -11,8 +11,8 @@ import { getWinnersByDate } from "@/app/actions/home"
 import { getTopCategories } from "@/app/actions/projects"
 
 export const metadata = {
-  title: "Daily Winners - Memescope Monday",
-  description: "Check out the daily winners on Memescope Monday",
+  title: "Hall of Fame - Memescope Monday",
+  description: "Check out the hall of fame on Memescope Monday",
 }
 
 // Composant pour afficher le message quand il n'y a pas de gagnants
@@ -76,7 +76,7 @@ export default async function WinnersPage({
           <div className="md:col-span-2">
             <div className="mb-6">
               <div className="mb-6 flex items-center justify-between">
-                <h1 className="px-3 text-xl font-bold sm:px-4 sm:text-2xl">Daily Winners</h1>
+                <h1 className="px-3 text-xl font-bold sm:px-4 sm:text-2xl">Hall of Fame</h1>
               </div>
 
               <div className="dark:bg-secondary/10 mx-3 rounded-lg border border-zinc-100 bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,0.05)] sm:mx-4 dark:border-zinc-800/50">
@@ -117,13 +117,13 @@ export default async function WinnersPage({
 
           {/* Sidebar */}
           <div className="space-y-3">
-            {/* About Daily Winners */}
+            {/* About Hall of Fame */}
             <div className="space-y-3 p-5 pt-0">
-              <h3 className="flex items-center gap-2 font-semibold">About Daily Winners</h3>
+              <h3 className="flex items-center gap-2 font-semibold">About Hall of Fame</h3>
               <div className="dark:bg-secondary/10 rounded-md border border-zinc-100 bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,0.05)] dark:border-zinc-800/50">
                 <p className="text-muted-foreground text-sm">
-                  Each day, Memescope Monday automatically ranks the top 3 most upvoted projects that
-                  were launched.
+                  Each day, Memescope Monday automatically ranks the top 3 most upvoted projects
+                  that were launched.
                 </p>
               </div>
             </div>
@@ -199,7 +199,7 @@ export default async function WinnersPage({
 
             {/* Quick Links */}
             <div className="space-y-3 p-5">
-              <h3 className="flex items-center gap-2 font-semibold">Quick Access</h3>
+              <h3 className="flex items-center gap-2 font-semibold">Discover More</h3>
               <div className="space-y-2">
                 <Link
                   href="/trending"
@@ -211,7 +211,7 @@ export default async function WinnersPage({
                   href="/trending?filter=month"
                   className="flex items-center gap-2 rounded-md p-2 text-sm transition-colors hover:underline"
                 >
-                  Best of Month
+                  Top Performers
                 </Link>
               </div>
             </div>

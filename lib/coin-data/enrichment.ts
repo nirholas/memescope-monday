@@ -1,8 +1,8 @@
-import type { CoinEnrichmentResult } from "./types"
-import { getPumpFunCoin } from "./pumpfun"
+import { getCoinGeckoByContract } from "./coingecko"
 import { getDexScreenerTopPair } from "./dexscreener"
 import { getHeliusAsset, getHeliusTokenHolders } from "./helius"
-import { getCoinGeckoByContract } from "./coingecko"
+import { getPumpFunCoin } from "./pumpfun"
+import type { CoinEnrichmentResult } from "./types"
 
 /**
  * Enrich coin data from multiple sources.
@@ -28,6 +28,7 @@ export async function enrichCoinData(
   const pf = pumpfun.status === "fulfilled" ? pumpfun.value : null
   if (pf) {
     result.pumpfunData = pf
+    result.name = pf.name
     result.ticker = pf.symbol
     result.marketCap = pf.usd_market_cap
     result.athMarketCap = pf.ath_market_cap
@@ -49,6 +50,7 @@ export async function enrichCoinData(
     result.liquidity = dex.liquidity?.usd || undefined
     if (!result.marketCap) result.marketCap = dex.marketCap || dex.fdv
     if (!result.ticker) result.ticker = dex.baseToken?.symbol
+    if (!result.name) result.name = dex.baseToken?.name
     if (!result.logoUrl && dex.info?.imageUrl) result.logoUrl = dex.info.imageUrl
     if (!result.websiteUrl && dex.info?.websites?.[0]) result.websiteUrl = dex.info.websites[0].url
     if (!result.twitterUrl) {
@@ -66,6 +68,7 @@ export async function enrichCoinData(
   if (hel) {
     result.heliusData = hel
     if (!result.ticker) result.ticker = hel.content?.metadata?.symbol
+    if (!result.name) result.name = hel.content?.metadata?.name
     if (!result.description) result.description = hel.content?.metadata?.description
     if (!result.logoUrl) result.logoUrl = hel.content?.links?.image || hel.content?.files?.[0]?.uri
     if (hel.token_info?.price_info?.price_per_token) {

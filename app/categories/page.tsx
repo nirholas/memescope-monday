@@ -295,7 +295,7 @@ export default async function CategoriesPage({
             </div>
 
             <div className="space-y-3 py-5">
-              <h3 className="flex items-center gap-2 font-semibold">Quick Access</h3>
+              <h3 className="flex items-center gap-2 font-semibold">Discover More</h3>
               <div className="space-y-2">
                 <Link
                   href="/trending"
@@ -307,7 +307,7 @@ export default async function CategoriesPage({
                   href="/trending?filter=month"
                   className="-mx-2 flex items-center gap-2 rounded-md p-2 text-sm transition-colors hover:underline"
                 >
-                  Best of Month
+                  Top Performers
                 </Link>
               </div>
             </div>
