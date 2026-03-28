@@ -34,8 +34,14 @@ export const {
   admin,
 } = authClient
 
-export const forgetPassword = (authClient as any).forgetPassword as (options: {
-  email: string
-  redirectTo: string
-  fetchOptions?: { headers?: Record<string, string> }
-}) => Promise<any>
+// forgetPassword exists at runtime but isn't in the generated types for this version
+export const forgetPassword = (
+  authClient as unknown as Record<
+    string,
+    (options: {
+      email: string
+      redirectTo: string
+      fetchOptions?: { headers?: Record<string, string> }
+    }) => Promise<unknown>
+  >
+).forgetPassword

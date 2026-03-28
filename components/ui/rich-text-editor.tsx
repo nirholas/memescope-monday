@@ -58,7 +58,6 @@ export function RichTextEditor({
           levels: [1, 2],
         },
       }),
-      // @ts-expect-error - tiptap extension type mismatch between @tiptap/core versions
       Placeholder.configure({
         placeholder,
       }),
