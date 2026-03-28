@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 
-import { RiArrowDownSLine, RiChat3Line, RiSendPlaneFill } from "@remixicon/react"
+import { RiArrowDownSLine, RiChat3Line } from "@remixicon/react"
 
 import { cn } from "@/lib/utils"
 
@@ -128,17 +128,14 @@ export function Trollbox({ projectId, isAuthenticated }: TrollboxProps) {
           </span>
         </div>
         <RiArrowDownSLine
-          className={cn(
-            "text-muted-foreground h-5 w-5 transition-transform",
-            open && "rotate-180",
-          )}
+          className={cn("text-muted-foreground h-5 w-5 transition-transform", open && "rotate-180")}
         />
       </button>
 
       {open && (
         <div className="border-border border-t">
           {/* Messages area */}
-          <div className="min-h-[120px] max-h-[300px] overflow-y-auto px-4 py-3">
+          <div className="max-h-[300px] min-h-[120px] overflow-y-auto px-4 py-3">
             {messages.length === 0 ? (
               <div className="flex min-h-[100px] items-center justify-center">
                 <p className="text-muted-foreground text-sm">
@@ -172,7 +169,7 @@ export function Trollbox({ projectId, isAuthenticated }: TrollboxProps) {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
                 placeholder="Say something degen..."
-                className="border-border bg-background placeholder:text-muted-foreground flex-1 rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="border-border bg-background placeholder:text-muted-foreground flex-1 rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 disabled={sending}
               />
               <button

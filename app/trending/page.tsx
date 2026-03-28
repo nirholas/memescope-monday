@@ -41,7 +41,7 @@ function TrendingDataSkeleton() {
       <div>
         <div className="bg-muted h-8 w-64 animate-pulse rounded"></div>
       </div>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {Array(6)
           .fill(0)
           .map((_, index) => (
@@ -85,7 +85,9 @@ async function TrendingData({
   let title
 
   if (filter === "today") {
-    projects = await getTopVotedProjects(PROJECT_LIMITS_VARIABLES.VIEW_ALL_PAGE_TODAY_YESTERDAY_LIMIT)
+    projects = await getTopVotedProjects(
+      PROJECT_LIMITS_VARIABLES.VIEW_ALL_PAGE_TODAY_YESTERDAY_LIMIT,
+    )
     title = "Today's Launches"
   } else if (filter === "yesterday") {
     projects = await getYesterdayProjects(
@@ -108,7 +110,7 @@ async function TrendingData({
           No projects found for this period.
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {projects.map((project: ProjectSummary) => (
             <TrendingProjectCard
               key={project.id}

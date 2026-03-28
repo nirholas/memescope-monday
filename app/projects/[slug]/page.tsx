@@ -10,7 +10,6 @@ import {
   RiGithubFill,
   RiGlobalLine,
   RiHashtag,
-  RiHomeLine,
   RiRocketLine,
   RiSendPlaneFill,
   RiStarLine,
@@ -26,12 +25,15 @@ import { Button } from "@/components/ui/button"
 import { RichTextDisplay } from "@/components/ui/rich-text-editor"
 import { BoostListing } from "@/components/coin/boost-listing"
 import { ChartEmbed } from "@/components/coin/chart-embed"
+import { CoinLinksPanel } from "@/components/coin/coin-links"
+import { CoinMarketDataPanel } from "@/components/coin/coin-market-data"
 import { CopyAddress } from "@/components/coin/copy-address"
 import { DisclaimerCard } from "@/components/coin/disclaimer-card"
 import { NewsSentiment } from "@/components/coin/news-sentiment"
 import { RelatedCoins } from "@/components/coin/related-coins"
 import { SafetyScore } from "@/components/coin/safety-score"
 import { SocialBuzz } from "@/components/coin/social-buzz"
+import { TokenInfo } from "@/components/coin/token-info"
 import { Trollbox } from "@/components/coin/trollbox"
 import { EditButton } from "@/components/project/edit-button"
 import { ProjectImageWithLoader } from "@/components/project/project-image-with-loader"
@@ -188,144 +190,160 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   })
 
   // Calculate safety score data for inline badge
-  const safetyGrade = coinDetail ? (() => {
-    const { market, dexscreener, pumpfun } = coinDetail
-    let totalScore = 0
-    let criteriaCount = 6
+  const safetyGrade = coinDetail
+    ? (() => {
+        const { market, dexscreener, pumpfun } = coinDetail
+        let totalScore = 0
+        const criteriaCount = 6
 
-    // Liquidity
-    let s = 0
-    if (market.liquidity !== null) {
-      if (market.liquidity >= 100_000) s = 100
-      else if (market.liquidity >= 50_000) s = 80
-      else if (market.liquidity >= 10_000) s = 60
-      else if (market.liquidity >= 1_000) s = 40
-      else if (market.liquidity > 0) s = 20
-    }
-    totalScore += s
+        // Liquidity
+        let s = 0
+        if (market.liquidity !== null) {
+          if (market.liquidity >= 100_000) s = 100
+          else if (market.liquidity >= 50_000) s = 80
+          else if (market.liquidity >= 10_000) s = 60
+          else if (market.liquidity >= 1_000) s = 40
+          else if (market.liquidity > 0) s = 20
+        }
+        totalScore += s
 
-    // Trading Activity
-    s = 0
-    if (dexscreener?.txns) {
-      const total24h = dexscreener.txns.h24.buys + dexscreener.txns.h24.sells
-      if (total24h >= 1000) s = 100
-      else if (total24h >= 500) s = 80
-      else if (total24h >= 100) s = 60
-      else if (total24h >= 20) s = 40
-      else if (total24h > 0) s = 20
-    }
-    totalScore += s
+        // Trading Activity
+        s = 0
+        if (dexscreener?.txns) {
+          const total24h = dexscreener.txns.h24.buys + dexscreener.txns.h24.sells
+          if (total24h >= 1000) s = 100
+          else if (total24h >= 500) s = 80
+          else if (total24h >= 100) s = 60
+          else if (total24h >= 20) s = 40
+          else if (total24h > 0) s = 20
+        }
+        totalScore += s
 
-    // Buy/Sell Ratio
-    s = 50
-    if (dexscreener?.txns) {
-      const buys = dexscreener.txns.h24.buys
-      const sells = dexscreener.txns.h24.sells
-      const total = buys + sells
-      if (total > 0) {
-        const buyRatio = buys / total
-        if (buyRatio >= 0.6) s = 80
-        else if (buyRatio >= 0.45) s = 60
-        else if (buyRatio >= 0.3) s = 40
-        else s = 20
-      }
-    }
-    totalScore += s
+        // Buy/Sell Ratio
+        s = 50
+        if (dexscreener?.txns) {
+          const buys = dexscreener.txns.h24.buys
+          const sells = dexscreener.txns.h24.sells
+          const total = buys + sells
+          if (total > 0) {
+            const buyRatio = buys / total
+            if (buyRatio >= 0.6) s = 80
+            else if (buyRatio >= 0.45) s = 60
+            else if (buyRatio >= 0.3) s = 40
+            else s = 20
+          }
+        }
+        totalScore += s
 
-    // Social Presence
-    s = 0
-    const hasWebsite = !!(pumpfun?.website || dexscreener?.info?.websites?.length)
-    const hasTwitter = !!(pumpfun?.twitter || dexscreener?.info?.socials?.some((x: { type: string }) => x.type === "twitter"))
-    if (hasWebsite) s += 40
-    if (hasTwitter) s += 40
-    if (pumpfun?.replyCount && pumpfun.replyCount > 10) s += 20
-    s = Math.min(s, 100)
-    totalScore += s
+        // Social Presence
+        s = 0
+        const hasWebsite = !!(pumpfun?.website || dexscreener?.info?.websites?.length)
+        const hasTwitter = !!(
+          pumpfun?.twitter ||
+          dexscreener?.info?.socials?.some((x: { type: string }) => x.type === "twitter")
+        )
+        if (hasWebsite) s += 40
+        if (hasTwitter) s += 40
+        if (pumpfun?.replyCount && pumpfun.replyCount > 10) s += 20
+        s = Math.min(s, 100)
+        totalScore += s
 
-    // Pair Age
-    s = 50
-    if (pumpfun?.createdTimestamp) {
-      const ageDays = (Date.now() - pumpfun.createdTimestamp) / (1000 * 60 * 60 * 24)
-      if (ageDays >= 30) s = 100
-      else if (ageDays >= 14) s = 80
-      else if (ageDays >= 7) s = 60
-      else if (ageDays >= 1) s = 40
-      else s = 20
-    }
-    totalScore += s
+        // Pair Age
+        s = 50
+        if (pumpfun?.createdTimestamp) {
+          const ageDays = (Date.now() - pumpfun.createdTimestamp) / (1000 * 60 * 60 * 24)
+          if (ageDays >= 30) s = 100
+          else if (ageDays >= 14) s = 80
+          else if (ageDays >= 7) s = 60
+          else if (ageDays >= 1) s = 40
+          else s = 20
+        }
+        totalScore += s
 
-    // Community Votes
-    s = 0
-    if (projectData.upvoteCount >= 50) s = 100
-    else if (projectData.upvoteCount >= 20) s = 80
-    else if (projectData.upvoteCount >= 10) s = 60
-    else if (projectData.upvoteCount >= 5) s = 40
-    else if (projectData.upvoteCount >= 1) s = 20
-    totalScore += s
+        // Community Votes
+        s = 0
+        if (projectData.upvoteCount >= 50) s = 100
+        else if (projectData.upvoteCount >= 20) s = 80
+        else if (projectData.upvoteCount >= 10) s = 60
+        else if (projectData.upvoteCount >= 5) s = 40
+        else if (projectData.upvoteCount >= 1) s = 20
+        totalScore += s
 
-    const total = Math.round(totalScore / criteriaCount)
-    let grade: string
-    if (total >= 80) grade = "A"
-    else if (total >= 60) grade = "B"
-    else if (total >= 40) grade = "C"
-    else if (total >= 20) grade = "D"
-    else grade = "F"
-    return { total, grade }
-  })() : null
+        const total = Math.round(totalScore / criteriaCount)
+        let grade: string
+        if (total >= 80) grade = "A"
+        else if (total >= 60) grade = "B"
+        else if (total >= 40) grade = "C"
+        else if (total >= 20) grade = "D"
+        else grade = "F"
+        return { total, grade }
+      })()
+    : null
 
   // Calculate social buzz for inline badge
-  const buzzLevel = coinDetail ? (() => {
-    let score = 0
-    const { dexscreener, pumpfun } = coinDetail
-    if (dexscreener?.volume) {
-      if (dexscreener.volume.h24 >= 1_000_000) score += 30
-      else if (dexscreener.volume.h24 >= 100_000) score += 20
-      else if (dexscreener.volume.h24 >= 10_000) score += 10
-    }
-    if (dexscreener?.txns) {
-      const total = dexscreener.txns.h24.buys + dexscreener.txns.h24.sells
-      if (total >= 1000) score += 25
-      else if (total >= 500) score += 15
-      else if (total >= 100) score += 10
-      else if (total >= 20) score += 5
-    }
-    if (pumpfun?.replyCount) {
-      if (pumpfun.replyCount >= 100) score += 20
-      else if (pumpfun.replyCount >= 50) score += 15
-      else if (pumpfun.replyCount >= 10) score += 10
-      else if (pumpfun.replyCount > 0) score += 5
-    }
-    if (projectData.upvoteCount >= 50) score += 15
-    else if (projectData.upvoteCount >= 20) score += 10
-    else if (projectData.upvoteCount >= 5) score += 5
-    score = Math.min(score, 100)
-    if (score >= 80) return { label: "Viral", emoji: "🔥" }
-    if (score >= 50) return { label: "High", emoji: "🚀" }
-    if (score >= 30) return { label: "Medium", emoji: "📈" }
-    if (score >= 10) return { label: "Low", emoji: "😴" }
-    return { label: "Dead", emoji: "💀" }
-  })() : null
+  const buzzLevel = coinDetail
+    ? (() => {
+        let score = 0
+        const { dexscreener, pumpfun } = coinDetail
+        if (dexscreener?.volume) {
+          if (dexscreener.volume.h24 >= 1_000_000) score += 30
+          else if (dexscreener.volume.h24 >= 100_000) score += 20
+          else if (dexscreener.volume.h24 >= 10_000) score += 10
+        }
+        if (dexscreener?.txns) {
+          const total = dexscreener.txns.h24.buys + dexscreener.txns.h24.sells
+          if (total >= 1000) score += 25
+          else if (total >= 500) score += 15
+          else if (total >= 100) score += 10
+          else if (total >= 20) score += 5
+        }
+        if (pumpfun?.replyCount) {
+          if (pumpfun.replyCount >= 100) score += 20
+          else if (pumpfun.replyCount >= 50) score += 15
+          else if (pumpfun.replyCount >= 10) score += 10
+          else if (pumpfun.replyCount > 0) score += 5
+        }
+        if (projectData.upvoteCount >= 50) score += 15
+        else if (projectData.upvoteCount >= 20) score += 10
+        else if (projectData.upvoteCount >= 5) score += 5
+        score = Math.min(score, 100)
+        if (score >= 80) return { label: "Viral", emoji: "🔥" }
+        if (score >= 50) return { label: "High", emoji: "🚀" }
+        if (score >= 30) return { label: "Medium", emoji: "📈" }
+        if (score >= 10) return { label: "Low", emoji: "😴" }
+        return { label: "Dead", emoji: "💀" }
+      })()
+    : null
 
-  const isFeatured = projectData.featuredOnHomepage || projectData.paidTrending || projectData.paidExpedited
+  const isFeatured =
+    projectData.featuredOnHomepage || projectData.paidTrending || projectData.paidExpedited
 
-  const gradeColorClass = safetyGrade ? ({
-    A: "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800",
-    B: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800",
-    C: "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800",
-    D: "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800",
-    F: "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800",
-  }[safetyGrade.grade] || "bg-gray-100 text-gray-700") : ""
+  const gradeColorClass = safetyGrade
+    ? {
+        A: "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800",
+        B: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800",
+        C: "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800",
+        D: "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800",
+        F: "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800",
+      }[safetyGrade.grade] || "bg-gray-100 text-gray-700"
+    : ""
 
   return (
     <div className="bg-background min-h-screen">
       <div className="mx-auto max-w-6xl px-6">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-1 py-4 text-sm">
-          <Link href="/" className="text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors">
+          <Link
+            href="/"
+            className="text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+          >
             Home
           </Link>
           <RiArrowRightSLine className="text-muted-foreground h-4 w-4" />
-          <Link href="/coins" className="text-muted-foreground hover:text-foreground transition-colors">
+          <Link
+            href="/coins"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
             Coins
           </Link>
           <RiArrowRightSLine className="text-muted-foreground h-4 w-4" />
@@ -389,12 +407,16 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                       {/* Upvote count */}
                       <div className="flex items-center gap-1">
                         <span className="text-muted-foreground text-sm">▲</span>
-                        <span className="text-foreground text-sm font-medium">{projectData.upvoteCount}</span>
+                        <span className="text-foreground text-sm font-medium">
+                          {projectData.upvoteCount}
+                        </span>
                       </div>
 
                       {/* Safety score pill */}
                       {safetyGrade && (
-                        <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-bold ${gradeColorClass}`}>
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-bold ${gradeColorClass}`}
+                        >
                           {safetyGrade.grade} {safetyGrade.total}/100
                         </span>
                       )}
@@ -491,14 +513,20 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                       {projectData.ticker && (
-                        <span className="text-muted-foreground text-lg font-medium">${projectData.ticker}</span>
+                        <span className="text-muted-foreground text-lg font-medium">
+                          ${projectData.ticker}
+                        </span>
                       )}
                       <div className="flex items-center gap-1">
                         <span className="text-muted-foreground text-sm">▲</span>
-                        <span className="text-foreground text-sm font-medium">{projectData.upvoteCount}</span>
+                        <span className="text-foreground text-sm font-medium">
+                          {projectData.upvoteCount}
+                        </span>
                       </div>
                       {safetyGrade && (
-                        <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-bold ${gradeColorClass}`}>
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-bold ${gradeColorClass}`}
+                        >
                           {safetyGrade.grade} {safetyGrade.total}/100
                         </span>
                       )}
@@ -597,7 +625,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     Contract Address
                   </span>
                   <div className="flex items-center gap-2">
-                    <code className="text-foreground flex-1 truncate text-sm font-mono">
+                    <code className="text-foreground flex-1 truncate font-mono text-sm">
                       {projectData.contractAddress}
                     </code>
                     <CopyAddress address={projectData.contractAddress} />
@@ -633,6 +661,13 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 />
               )}
 
+              {/* Full Market Data Panel */}
+              {coinDetail && projectData.chain && (
+                <div className="border-border rounded-lg border p-4">
+                  <CoinMarketDataPanel data={coinDetail} chain={projectData.chain} />
+                </div>
+              )}
+
               {/* Edit button pour owners */}
               {isOwner && (
                 <div>
@@ -647,17 +682,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               )}
 
               {/* News & Sentiment */}
-              {coinDetail && (
-                <NewsSentiment news={coinDetail.news} />
-              )}
+              {coinDetail && <NewsSentiment news={coinDetail.news} />}
 
               {/* Trollbox */}
-              {projectData.launchStatus === "ongoing" ||
-              projectData.launchStatus === "launched" ? (
-                <Trollbox
-                  projectId={projectData.id}
-                  isAuthenticated={Boolean(session?.user)}
-                />
+              {projectData.launchStatus === "ongoing" || projectData.launchStatus === "launched" ? (
+                <Trollbox projectId={projectData.id} isAuthenticated={Boolean(session?.user)} />
               ) : (
                 <div className="border-border rounded-lg border p-6 text-center">
                   <p className="text-muted-foreground">
@@ -920,6 +949,20 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     ))}
                   </div>
                 </div>
+              )}
+
+              {/* Token Info (Helius, CoinGecko categories, description) */}
+              {coinDetail && projectData.chain && (
+                <TokenInfo data={coinDetail} chain={projectData.chain} />
+              )}
+
+              {/* External Links */}
+              {coinDetail && projectData.contractAddress && projectData.chain && (
+                <CoinLinksPanel
+                  data={coinDetail}
+                  tokenAddress={projectData.contractAddress}
+                  chain={projectData.chain}
+                />
               )}
 
               {/* Safety Score */}

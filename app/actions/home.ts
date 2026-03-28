@@ -91,6 +91,8 @@ export async function getTopVotedProjects(limit: number = PROJECT_LIMITS_VARIABL
       chain: projectTable.chain,
       ticker: projectTable.ticker,
       marketCap: projectTable.marketCap,
+      priceUsd: projectTable.priceUsd,
+      priceChange24h: projectTable.priceChange24h,
       upvoteCount: sql<number>`cast(count(distinct ${upvote.id}) as int)`.mapWith(Number),
       commentCount: sql<number>`cast(count(distinct ${fumaComments.id}) as int)`.mapWith(Number),
     })
@@ -123,6 +125,8 @@ export async function getNewlyListedProjects(limit: number = PROJECT_LIMITS_VARI
       chain: projectTable.chain,
       ticker: projectTable.ticker,
       marketCap: projectTable.marketCap,
+      priceUsd: projectTable.priceUsd,
+      priceChange24h: projectTable.priceChange24h,
       upvoteCount: sql<number>`cast(count(distinct ${upvote.id}) as int)`.mapWith(Number),
       commentCount: sql<number>`cast(count(distinct ${fumaComments.id}) as int)`.mapWith(Number),
     })
@@ -173,6 +177,8 @@ export async function getYesterdayProjects(
       chain: projectTable.chain,
       ticker: projectTable.ticker,
       marketCap: projectTable.marketCap,
+      priceUsd: projectTable.priceUsd,
+      priceChange24h: projectTable.priceChange24h,
       upvoteCount: sql<number>`cast(count(distinct ${upvote.id}) as int)`.mapWith(Number),
       commentCount: sql<number>`cast(count(distinct ${fumaComments.id}) as int)`.mapWith(Number),
       dailyRanking: projectTable.dailyRanking,
@@ -216,6 +222,8 @@ export async function getMonthBestProjects(limit: number = PROJECT_LIMITS_VARIAB
       chain: projectTable.chain,
       ticker: projectTable.ticker,
       marketCap: projectTable.marketCap,
+      priceUsd: projectTable.priceUsd,
+      priceChange24h: projectTable.priceChange24h,
       upvoteCount: sql<number>`cast(count(distinct ${upvote.id}) as int)`.mapWith(Number),
       commentCount: sql<number>`cast(count(distinct ${fumaComments.id}) as int)`.mapWith(Number),
     })

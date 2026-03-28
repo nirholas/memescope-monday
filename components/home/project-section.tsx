@@ -24,6 +24,8 @@ interface Project {
   dailyRanking?: number | null
   chain?: string | null
   ticker?: string | null
+  priceUsd?: number | null
+  priceChange24h?: number | null
 }
 
 interface ProjectSectionProps {
@@ -86,6 +88,8 @@ export function ProjectSection({
               websiteUrl={project.websiteUrl ?? undefined}
               chain={project.chain}
               ticker={project.ticker}
+              priceUsd={project.priceUsd}
+              priceChange24h={project.priceChange24h}
             />
           ))}
         </div>

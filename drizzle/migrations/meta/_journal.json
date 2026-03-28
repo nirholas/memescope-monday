@@ -43,6 +43,13 @@
       "when": 1750233457666,
       "tag": "0005_early_ikaris",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1774691757953,
+      "tag": "0006_magical_wallflower",
+      "breakpoints": true
     }
   ]
 }

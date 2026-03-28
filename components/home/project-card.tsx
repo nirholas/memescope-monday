@@ -37,6 +37,8 @@ interface ProjectCardProps {
   websiteUrl?: string
   chain?: string | null
   ticker?: string | null
+  priceUsd?: number | null
+  priceChange24h?: number | null
 }
 
 function getChainStyle(chain: string) {
@@ -52,6 +54,13 @@ function getChainStyle(chain: string) {
     default:
       return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
   }
+}
+
+function formatCardPrice(price: number): string {
+  if (price >= 1) return `$${price.toFixed(2)}`
+  if (price >= 0.01) return `$${price.toFixed(4)}`
+  if (price >= 0.0001) return `$${price.toFixed(6)}`
+  return `$${price.toFixed(8)}`
 }
 
 export function ProjectCard({
@@ -72,6 +81,8 @@ export function ProjectCard({
   websiteUrl,
   chain,
   ticker,
+  priceUsd,
+  priceChange24h,
 }: ProjectCardProps) {
   const router = useRouter()
   const projectPageUrl = `/projects/${slug}`
@@ -142,6 +153,27 @@ export function ProjectCard({
           <p className="text-muted-foreground mt-0.5 line-clamp-1 text-[13px] leading-relaxed sm:text-sm">
             {stripHtml(description)}
           </p>
+
+          {/* Price & 24h Change */}
+          {priceUsd != null && priceUsd > 0 && (
+            <div className="mt-1 flex items-center gap-2">
+              <span className="text-foreground text-xs font-semibold tabular-nums">
+                {formatCardPrice(priceUsd)}
+              </span>
+              {priceChange24h != null && (
+                <span
+                  className={`text-[11px] font-medium tabular-nums ${
+                    priceChange24h >= 0
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-red-600 dark:text-red-400"
+                  }`}
+                >
+                  {priceChange24h >= 0 ? "+" : ""}
+                  {priceChange24h.toFixed(2)}%
+                </span>
+              )}
+            </div>
+          )}
 
           <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
             {chain && (

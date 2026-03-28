@@ -1,6 +1,11 @@
 export { enrichCoinData, formatMarketCap, formatPrice, formatPercentChange } from "./enrichment"
 export { getPumpFunCoin, searchPumpFunCoins } from "./pumpfun"
-export { getDexScreenerTopPair, getDexScreenerPairs, getDexScreenerEmbedUrl, getDexScreenerPageUrl } from "./dexscreener"
+export {
+  getDexScreenerTopPair,
+  getDexScreenerPairs,
+  getDexScreenerEmbedUrl,
+  getDexScreenerPageUrl,
+} from "./dexscreener"
 export { getHeliusAsset, getHeliusTokenHolders } from "./helius"
 export { getCoinGeckoByContract } from "./coingecko"
 export { getCMCByContract } from "./cmc"
@@ -16,4 +21,12 @@ export {
   getChainExplorerUrl,
   getDexScreenerChartUrl,
 } from "./detail"
-export type { CoinDetailData, CoinMarketData, CoinNews, PumpFunData, HeliusTokenMeta } from "./detail"
+export type {
+  CoinDetailData,
+  CoinMarketData,
+  CoinNews,
+  PumpFunData,
+  HeliusTokenMeta,
+  DexInfo,
+  CoinGeckoExtra,
+} from "./detail"

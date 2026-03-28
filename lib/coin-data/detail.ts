@@ -3,17 +3,33 @@
 
 export interface CoinMarketData {
   price: number | null
+  priceNative: string | null
+  priceChange1h: number | null
   priceChange24h: number | null
   priceChange7d: number | null
+  priceChange14d: number | null
+  priceChange30d: number | null
+  high24h: number | null
+  low24h: number | null
   marketCap: number | null
+  marketCapRank: number | null
+  marketCapChange24h: number | null
+  marketCapChangePercent24h: number | null
   volume24h: number | null
   liquidity: number | null
+  liquidityBase: number | null
+  liquidityQuote: number | null
   fdv: number | null
   ath: number | null
   athDate: string | null
+  atl: number | null
+  atlDate: string | null
   holders: number | null
   totalSupply: number | null
   circulatingSupply: number | null
+  watchlistUsers: number | null
+  sentimentUp: number | null
+  sentimentDown: number | null
 }
 
 export interface PumpFunData {
@@ -55,9 +71,31 @@ export interface HeliusTokenMeta {
   description: string | null
 }
 
+export interface DexInfo {
+  dexName: string
+  pairAddress: string
+  pairUrl: string
+  baseToken: { name: string; symbol: string; address: string }
+  quoteToken: { name: string; symbol: string; address: string }
+  pairCreatedAt: string | null
+}
+
+export interface CoinGeckoExtra {
+  imageUrl: string | null
+  description: string | null
+  categories: string[]
+  genesisDate: string | null
+  coingeckoId: string | null
+  homepage: string | null
+  twitterHandle: string | null
+  telegramChannel: string | null
+}
+
 export interface CoinDetailData {
   pumpfun: PumpFunData | null
   dexscreener: import("./types").DexScreenerPair | null
+  dexInfo: DexInfo | null
+  coingeckoExtra: CoinGeckoExtra | null
   market: CoinMarketData
   news: CoinNews[]
   heliusMeta: HeliusTokenMeta | null
@@ -121,10 +159,15 @@ async function fetchDexScreenerData(
 }
 
 // ── CoinGecko (free tier) ──
+interface CoinGeckoResult {
+  market: Partial<CoinMarketData>
+  extra: CoinGeckoExtra
+}
+
 async function fetchCoinGeckoData(
   tokenAddress: string,
   chain: string = "solana",
-): Promise<CoinMarketData | null> {
+): Promise<CoinGeckoResult | null> {
   const apiKey = process.env.COINGECKO_API_KEY
   try {
     const platform = chain === "base" ? "base" : chain === "bnb" ? "binance-smart-chain" : "solana"
@@ -136,19 +179,45 @@ async function fetchCoinGeckoData(
     )
     if (!res.ok) return null
     const data = await res.json()
+    const md = data.market_data
     return {
-      price: data.market_data?.current_price?.usd ?? null,
-      priceChange24h: data.market_data?.price_change_percentage_24h ?? null,
-      priceChange7d: data.market_data?.price_change_percentage_7d ?? null,
-      marketCap: data.market_data?.market_cap?.usd ?? null,
-      volume24h: data.market_data?.total_volume?.usd ?? null,
-      liquidity: null,
-      fdv: data.market_data?.fully_diluted_valuation?.usd ?? null,
-      ath: data.market_data?.ath?.usd ?? null,
-      athDate: data.market_data?.ath_date?.usd ?? null,
-      holders: null,
-      totalSupply: data.market_data?.total_supply ?? null,
-      circulatingSupply: data.market_data?.circulating_supply ?? null,
+      market: {
+        price: md?.current_price?.usd ?? null,
+        priceChange1h: md?.price_change_percentage_1h_in_currency?.usd ?? null,
+        priceChange24h: md?.price_change_percentage_24h ?? null,
+        priceChange7d: md?.price_change_percentage_7d ?? null,
+        priceChange14d: md?.price_change_percentage_14d ?? null,
+        priceChange30d: md?.price_change_percentage_30d ?? null,
+        high24h: md?.high_24h?.usd ?? null,
+        low24h: md?.low_24h?.usd ?? null,
+        marketCap: md?.market_cap?.usd ?? null,
+        marketCapRank: data.market_cap_rank ?? null,
+        marketCapChange24h: md?.market_cap_change_24h ?? null,
+        marketCapChangePercent24h: md?.market_cap_change_percentage_24h ?? null,
+        volume24h: md?.total_volume?.usd ?? null,
+        liquidity: null,
+        fdv: md?.fully_diluted_valuation?.usd ?? null,
+        ath: md?.ath?.usd ?? null,
+        athDate: md?.ath_date?.usd ?? null,
+        atl: md?.atl?.usd ?? null,
+        atlDate: md?.atl_date?.usd ?? null,
+        holders: null,
+        totalSupply: md?.total_supply ?? null,
+        circulatingSupply: md?.circulating_supply ?? null,
+        watchlistUsers: data.watchlist_portfolio_users ?? null,
+        sentimentUp: data.sentiment_votes_up_percentage ?? null,
+        sentimentDown: data.sentiment_votes_down_percentage ?? null,
+      },
+      extra: {
+        imageUrl: data.image?.large ?? null,
+        description: data.description?.en ?? null,
+        categories: (data.categories ?? []).filter(Boolean),
+        genesisDate: data.genesis_date ?? null,
+        coingeckoId: data.id ?? null,
+        homepage: data.links?.homepage?.[0] || null,
+        twitterHandle: data.links?.twitter_screen_name || null,
+        telegramChannel: data.links?.telegram_channel_identifier || null,
+      },
     }
   } catch {
     return null
@@ -217,6 +286,30 @@ async function fetchHeliusMetadata(mintAddress: string): Promise<HeliusTokenMeta
   }
 }
 
+// ── Helius Token Holder Count ──
+async function fetchHeliusHolderCount(mintAddress: string): Promise<number | null> {
+  const apiKey = process.env.HELIUS_API_KEY
+  if (!apiKey) return null
+  try {
+    const res = await fetch(`https://mainnet.helius-rpc.com/?api-key=${apiKey}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "helius-holders",
+        method: "getTokenAccounts",
+        params: { mint: mintAddress, limit: 1, page: 1 },
+      }),
+      next: { revalidate: 300 },
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    return data.result?.total || null
+  } catch {
+    return null
+  }
+}
+
 // ── Aggregate all data for a coin ──
 export async function fetchCoinDetail(
   tokenAddress: string,
@@ -225,34 +318,76 @@ export async function fetchCoinDetail(
 ): Promise<CoinDetailData> {
   const isSolana = chain === "solana"
 
-  const [pumpfun, dexscreener, coingecko, news, helius] = await Promise.all([
+  const [pumpfun, dexscreener, coingecko, news, helius, holderCount] = await Promise.all([
     isSolana ? fetchPumpFunData(tokenAddress) : Promise.resolve(null),
     fetchDexScreenerData(tokenAddress),
     fetchCoinGeckoData(tokenAddress, chain),
     symbol ? fetchCryptoNews(symbol) : Promise.resolve([]),
     isSolana ? fetchHeliusMetadata(tokenAddress) : Promise.resolve(null),
+    isSolana ? fetchHeliusHolderCount(tokenAddress) : Promise.resolve(null),
   ])
 
+  // Extract DexScreener pair info
+  const dexInfo: DexInfo | null = dexscreener
+    ? {
+        dexName: dexscreener.dexId,
+        pairAddress: dexscreener.pairAddress,
+        pairUrl: dexscreener.url,
+        baseToken: {
+          name: dexscreener.baseToken.name,
+          symbol: dexscreener.baseToken.symbol,
+          address: dexscreener.baseToken.address,
+        },
+        quoteToken: {
+          name: dexscreener.quoteToken.name,
+          symbol: dexscreener.quoteToken.symbol,
+          address: dexscreener.quoteToken.address,
+        },
+        pairCreatedAt: (dexscreener as Record<string, unknown>).pairCreatedAt
+          ? String((dexscreener as Record<string, unknown>).pairCreatedAt)
+          : null,
+      }
+    : null
+
+  const cgMarket = coingecko?.market
   const market: CoinMarketData = {
-    price: dexscreener ? parseFloat(dexscreener.priceUsd) : (coingecko?.price ?? null),
-    priceChange24h: dexscreener?.priceChange?.h24 ?? coingecko?.priceChange24h ?? null,
-    priceChange7d: coingecko?.priceChange7d ?? null,
-    marketCap: dexscreener?.marketCap ?? pumpfun?.usdMarketCap ?? coingecko?.marketCap ?? null,
-    volume24h: dexscreener?.volume?.h24 ?? coingecko?.volume24h ?? null,
+    price: dexscreener ? parseFloat(dexscreener.priceUsd) : (cgMarket?.price ?? null),
+    priceNative: dexscreener?.priceNative ?? null,
+    priceChange1h: dexscreener?.priceChange?.h1 ?? cgMarket?.priceChange1h ?? null,
+    priceChange24h: dexscreener?.priceChange?.h24 ?? cgMarket?.priceChange24h ?? null,
+    priceChange7d: cgMarket?.priceChange7d ?? null,
+    priceChange14d: cgMarket?.priceChange14d ?? null,
+    priceChange30d: cgMarket?.priceChange30d ?? null,
+    high24h: cgMarket?.high24h ?? null,
+    low24h: cgMarket?.low24h ?? null,
+    marketCap: dexscreener?.marketCap ?? pumpfun?.usdMarketCap ?? cgMarket?.marketCap ?? null,
+    marketCapRank: cgMarket?.marketCapRank ?? null,
+    marketCapChange24h: cgMarket?.marketCapChange24h ?? null,
+    marketCapChangePercent24h: cgMarket?.marketCapChangePercent24h ?? null,
+    volume24h: dexscreener?.volume?.h24 ?? cgMarket?.volume24h ?? null,
     liquidity: dexscreener?.liquidity?.usd ?? null,
-    fdv: dexscreener?.fdv ?? coingecko?.fdv ?? null,
-    ath: pumpfun?.athMarketCap ?? coingecko?.ath ?? null,
+    liquidityBase: dexscreener?.liquidity?.base ?? null,
+    liquidityQuote: dexscreener?.liquidity?.quote ?? null,
+    fdv: dexscreener?.fdv ?? cgMarket?.fdv ?? null,
+    ath: pumpfun?.athMarketCap ?? cgMarket?.ath ?? null,
     athDate: pumpfun?.athMarketCapTimestamp
       ? new Date(pumpfun.athMarketCapTimestamp).toISOString()
-      : (coingecko?.athDate ?? null),
-    holders: coingecko?.holders ?? null,
-    totalSupply: coingecko?.totalSupply ?? null,
-    circulatingSupply: coingecko?.circulatingSupply ?? null,
+      : (cgMarket?.athDate ?? null),
+    atl: cgMarket?.atl ?? null,
+    atlDate: cgMarket?.atlDate ?? null,
+    holders: holderCount ?? cgMarket?.holders ?? null,
+    totalSupply: cgMarket?.totalSupply ?? null,
+    circulatingSupply: cgMarket?.circulatingSupply ?? null,
+    watchlistUsers: cgMarket?.watchlistUsers ?? null,
+    sentimentUp: cgMarket?.sentimentUp ?? null,
+    sentimentDown: cgMarket?.sentimentDown ?? null,
   }
 
   return {
     pumpfun,
     dexscreener,
+    dexInfo,
+    coingeckoExtra: coingecko?.extra ?? null,
     market,
     news,
     heliusMeta: helius,
