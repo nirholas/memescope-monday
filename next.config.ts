@@ -79,3 +79,4 @@ const withMDX = createMDX({
 // Combine MDX and Next.js config
 export default withMDX(nextConfig)
 
+
