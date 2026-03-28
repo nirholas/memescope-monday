@@ -22,15 +22,14 @@ const legalLinks = [
   { title: "Attribution Badges", href: "/legal/badges" },
 ]
 
-// Liens pour la nouvelle colonne "Connect"
 const connectLinkItems = [
   {
-    href: "https://github.com/drdruide/open-launch",
+    href: "https://github.com/nirholas/memescope-monday",
     icon: RiGithubFill,
     label: "GitHub",
   },
   {
-    href: "https://twitter.com/Ericbn09",
+    href: "https://twitter.com/swarminged",
     icon: RiTwitterXFill,
     label: "Twitter / X",
   },
@@ -54,12 +53,12 @@ export default function FooterSection() {
             <p className="text-muted-foreground mb-4 text-sm">
               Open source project by{" "}
               <Link
-                href="https://x.com/Ericbn09"
+                href="https://x.com/swarminged"
                 target="_blank"
                 rel="noopener"
                 className="hover:text-primary underline"
               >
-                Eric
+                swarmsy
               </Link>
             </p>
             <div className="flex items-center justify-start space-x-3">
