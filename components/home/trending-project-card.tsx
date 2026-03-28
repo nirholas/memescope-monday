@@ -81,7 +81,6 @@ export function TrendingProjectCard({
   description,
   logoUrl,
   upvoteCount,
-  launchStatus: _launchStatus,
   userHasUpvoted,
   categories,
   isAuthenticated,
