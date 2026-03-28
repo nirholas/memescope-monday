@@ -1,12 +1,11 @@
 /**
- * Post a tweet to X using cookie-based auth (X_AUTH_TOKEN + X_CT0).
- * Uses X's internal GraphQL API — no paid Twitter API required.
+ * Post a tweet to X using the official X API v2 with OAuth 1.0a.
+ * Requires: X_API_KEY, X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_TOKEN_SECRET
  */
 
-const BEARER_TOKEN =
-  "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA"
+import crypto from "crypto"
 
-const CREATE_TWEET_URL = "https://x.com/i/api/graphql/a1p9RWpkYKBjWv_I3WzS-A/CreateTweet"
+const TWEET_URL = "https://api.x.com/2/tweets"
 
 interface PostTweetResult {
   success: boolean
@@ -14,71 +13,78 @@ interface PostTweetResult {
   error?: string
 }
 
-export async function postTweet(text: string): Promise<PostTweetResult> {
-  const authToken = process.env.X_AUTH_TOKEN
-  const ct0 = process.env.X_CT0
+function percentEncode(str: string): string {
+  return encodeURIComponent(str).replace(
+    /[!'()*]/g,
+    (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`,
+  )
+}
 
-  if (!authToken || !ct0) {
-    console.warn("[X Notification] X_AUTH_TOKEN or X_CT0 not set, skipping tweet")
-    return { success: false, error: "X credentials not configured" }
+function generateOAuthHeader(method: string, url: string, body: string): string {
+  const apiKey = process.env.X_API_KEY!
+  const apiSecret = process.env.X_API_SECRET!
+  const accessToken = process.env.X_ACCESS_TOKEN!
+  const accessTokenSecret = process.env.X_ACCESS_TOKEN_SECRET!
+
+  const timestamp = Math.floor(Date.now() / 1000).toString()
+  const nonce = crypto.randomBytes(16).toString("hex")
+
+  const oauthParams: Record<string, string> = {
+    oauth_consumer_key: apiKey,
+    oauth_nonce: nonce,
+    oauth_signature_method: "HMAC-SHA1",
+    oauth_timestamp: timestamp,
+    oauth_token: accessToken,
+    oauth_version: "1.0",
   }
 
+  const sortedParams = Object.keys(oauthParams)
+    .sort()
+    .map((k) => `${percentEncode(k)}=${percentEncode(oauthParams[k])}`)
+    .join("&")
+
+  const signatureBase = `${method}&${percentEncode(url)}&${percentEncode(sortedParams)}`
+  const signingKey = `${percentEncode(apiSecret)}&${percentEncode(accessTokenSecret)}`
+  const signature = crypto.createHmac("sha1", signingKey).update(signatureBase).digest("base64")
+
+  oauthParams.oauth_signature = signature
+
+  const header = Object.keys(oauthParams)
+    .sort()
+    .map((k) => `${percentEncode(k)}="${percentEncode(oauthParams[k])}"`)
+    .join(", ")
+
+  return `OAuth ${header}`
+}
+
+export async function postTweet(text: string): Promise<PostTweetResult> {
+  const { X_API_KEY, X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_TOKEN_SECRET } = process.env
+
+  if (!X_API_KEY || !X_API_SECRET || !X_ACCESS_TOKEN || !X_ACCESS_TOKEN_SECRET) {
+    console.warn("[X Notification] X API credentials not set, skipping tweet")
+    return { success: false, error: "X API credentials not configured" }
+  }
+
+  const body = JSON.stringify({ text })
+
   try {
-    const res = await fetch(CREATE_TWEET_URL, {
+    const res = await fetch(TWEET_URL, {
       method: "POST",
       headers: {
-        authorization: `Bearer ${BEARER_TOKEN}`,
-        "content-type": "application/json",
-        cookie: `auth_token=${authToken}; ct0=${ct0}`,
-        "x-csrf-token": ct0,
-        "x-twitter-active-user": "yes",
-        "x-twitter-auth-type": "OAuth2Session",
+        Authorization: generateOAuthHeader("POST", TWEET_URL, body),
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        variables: {
-          tweet_text: text,
-          dark_request: false,
-          media: { media_entities: [], possibly_sensitive: false },
-          semantic_annotation_ids: [],
-        },
-        features: {
-          communities_web_enable_tweet_community_results_fetch: true,
-          c9s_tweet_anatomy_moderator_badge_enabled: true,
-          tweetypie_unmention_optimization_enabled: true,
-          responsive_web_edit_tweet_api_enabled: true,
-          graphql_is_translatable_rweb_tweet_is_translatable_enabled: true,
-          view_counts_everywhere_api_enabled: true,
-          longform_notetweets_consumption_enabled: true,
-          responsive_web_twitter_article_tweet_consumption_enabled: true,
-          tweet_awards_web_tipping_enabled: false,
-          creator_subscriptions_quote_tweet_preview_enabled: false,
-          longform_notetweets_rich_text_read_enabled: true,
-          longform_notetweets_inline_media_enabled: true,
-          articles_preview_enabled: true,
-          rweb_video_timestamps_enabled: true,
-          rweb_tipjar_consumption_enabled: true,
-          responsive_web_graphql_exclude_directive_enabled: true,
-          verified_phone_label_enabled: false,
-          freedom_of_speech_not_reach_fetch_enabled: true,
-          standardized_nudges_misinfo: true,
-          tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled: true,
-          responsive_web_graphql_skip_user_profile_image_extensions_enabled: false,
-          responsive_web_graphql_timeline_navigation_enabled: true,
-          responsive_web_enhance_cards_enabled: false,
-        },
-        queryId: "a1p9RWpkYKBjWv_I3WzS-A",
-      }),
+      body,
     })
 
     if (!res.ok) {
-      const body = await res.text()
-      console.error(`[X Notification] Tweet failed: ${res.status}`, body)
+      const errorBody = await res.text()
+      console.error(`[X Notification] Tweet failed: ${res.status}`, errorBody)
       return { success: false, error: `HTTP ${res.status}` }
     }
 
     const data = await res.json()
-    const tweetResult = data?.data?.create_tweet?.tweet_results?.result
-    const tweetId = tweetResult?.rest_id
+    const tweetId = data?.data?.id
 
     console.log(`[X Notification] Tweet posted: ${tweetId}`)
     return { success: true, tweetId }
