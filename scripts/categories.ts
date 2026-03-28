@@ -70,3 +70,4 @@ try {
   console.error("❌ Erreur lors de l'initialisation des catégories :", error)
 }
 
+
