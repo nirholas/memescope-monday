@@ -10,6 +10,7 @@ import {
   RiListUnordered,
 } from "@remixicon/react"
 import Placeholder from "@tiptap/extension-placeholder"
+import type { AnyExtension } from "@tiptap/core"
 import { EditorContent, useEditor } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 
@@ -52,15 +53,14 @@ export function RichTextEditor({
 }: RichTextEditorProps) {
   const editor = useEditor({
     extensions: [
-      // @ts-expect-error - tiptap extension type mismatch between @tiptap/core versions
       StarterKit.configure({
         heading: {
           levels: [1, 2],
         },
-      }),
+      }) as unknown as AnyExtension,
       Placeholder.configure({
         placeholder,
-      }),
+      }) as unknown as AnyExtension,
     ],
     content,
     onUpdate: ({ editor }) => {
