@@ -52,14 +52,16 @@ export function RichTextEditor({
 }: RichTextEditorProps) {
   const editor = useEditor({
     extensions: [
+      // @ts-expect-error - tiptap extension type mismatch between @tiptap/core versions
       StarterKit.configure({
         heading: {
           levels: [1, 2],
         },
-      }) as any,
+      }),
+      // @ts-expect-error - tiptap extension type mismatch between @tiptap/core versions
       Placeholder.configure({
         placeholder,
-      }) as any,
+      }),
     ],
     content,
     onUpdate: ({ editor }) => {
@@ -112,6 +114,7 @@ export function RichTextEditor({
           type="button"
           variant="ghost"
           size="sm"
+          // @ts-expect-error - toggleBold exists at runtime via StarterKit but types are mismatched
           onClick={() => editor.chain().focus().toggleBold().run()}
           className={cn("h-8 px-2", editor.isActive("bold") && "bg-muted")}
         >
@@ -122,6 +125,7 @@ export function RichTextEditor({
           type="button"
           variant="ghost"
           size="sm"
+          // @ts-expect-error - toggleItalic exists at runtime via StarterKit but types are mismatched
           onClick={() => editor.chain().focus().toggleItalic().run()}
           className={cn("h-8 px-2", editor.isActive("italic") && "bg-muted")}
         >

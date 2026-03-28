@@ -39,7 +39,7 @@ const faqItems = [
     id: "4",
     title: "How do I pay?",
     content:
-      "You can pay with a credit card via Stripe, or with SOL/crypto by contacting @swarminged on Telegram or X.",
+      "You can pay with a credit card via Stripe, or with SOL/crypto by contacting @nichxbt on Telegram or X.",
   },
   {
     id: "5",
@@ -165,7 +165,7 @@ export default function PricingPage() {
                     highlighted={tier.highlighted}
                   />
                   <Button size="sm" variant="ghost" className="w-full text-xs" asChild>
-                    <Link href="https://t.me/swarminged" target="_blank" rel="noopener noreferrer">
+                    <Link href="https://t.me/nichxbt" target="_blank" rel="noopener noreferrer">
                       Pay with crypto →
                     </Link>
                   </Button>
@@ -181,11 +181,11 @@ export default function PricingPage() {
         <div className="rounded-lg border p-6">
           <h2 className="mb-2 text-lg font-semibold">Prefer to pay with crypto?</h2>
           <p className="text-muted-foreground mb-4 text-sm">
-            Reach out to @swarminged on Telegram or X to pay with SOL or other crypto.
+            Reach out to @nichxbt on Telegram or X to pay with SOL or other crypto.
           </p>
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button size="sm" asChild>
-              <Link href="https://t.me/swarminged" target="_blank" rel="noopener noreferrer">
+              <Link href="https://t.me/nichxbt" target="_blank" rel="noopener noreferrer">
                 Contact on Telegram
               </Link>
             </Button>
