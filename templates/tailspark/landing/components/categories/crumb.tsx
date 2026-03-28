@@ -1,29 +1,15 @@
-import { FiHome } from "react-icons/fi";
-import { MdKeyboardArrowRight } from "react-icons/md";
-
 export default () => {
   return (
     <nav className="flex" aria-label="Breadcrumb">
-      <ol role="list" className="flex items-center space-x-2">
+      <ol role="list" className="flex items-center space-x-2 text-sm">
         <li>
-          <div>
-            <a className="text-gray-400 hover:text-gray-500" href="/">
-              <FiHome />
-              <span className="sr-only">Home</span>
-            </a>
-          </div>
+          <a className="text-[#8b8d98] hover:text-white transition-colors" href="/">
+            Home
+          </a>
         </li>
-
         <li>
-          <div className="flex items-center">
-            <MdKeyboardArrowRight />
-            <a
-              className="ml-2 text-md font-medium text-primary"
-              aria-current="page"
-            >
-              Categories
-            </a>
-          </div>
+          <span className="text-[#2a2d3a] mx-1">/</span>
+          <span className="text-[#00ff88]">Categories</span>
         </li>
       </ol>
     </nav>

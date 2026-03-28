@@ -1,12 +1,12 @@
 {
   "metadata": {
-    "title": "MCP Servers",
-    "description": "The largest collection of MCP Servers, including Awesome MCP Servers and Claude MCP integration. Search and discover MCP servers to enhance your AI capabilities.",
-    "keywords": "MCP Servers, Awesome MCP Servers, Claude MCP, Model Context Protocol"
+    "title": "Memescope Monday",
+    "description": "The ultimate memecoin directory for Memescope Monday. Discover, submit, and vote on the hottest memecoins across Solana, Base, and BNB Chain.",
+    "keywords": "Memescope Monday, memecoin, Solana, PumpFun, Base, BNB Chain, crypto, degen, meme coins"
   },
   "header": {
     "brand": {
-      "title": "MCP Servers",
+      "title": "Memescope Monday",
       "url": "/",
       "avatar": {
         "src": "/logo.png"
@@ -15,86 +15,146 @@
     "nav": {
       "items": [
         {
+          "title": "Directory",
+          "url": "/",
+          "target": "_self"
+        },
+        {
           "title": "Categories",
           "url": "/categories",
           "target": "_self"
         },
         {
-          "title": "Submit",
-          "url": "https://github.com/chatmcp/mcp-directory/issues/1",
-          "target": "_blank"
+          "title": "Submit Coin",
+          "url": "/submit",
+          "target": "_self"
         },
         {
-          "title": "Telegram",
-          "url": "https://t.me/+N0gv4O9SXio2YWU1",
-          "target": "_blank"
-        },
-        {
-          "title": "Discord",
-          "url": "https://discord.gg/RsYPRrnyqg",
+          "title": "Twitter",
+          "url": "https://twitter.com",
           "target": "_blank"
         }
       ]
     }
   },
   "hero": {
-    "title": "Find Awesome MCP Servers",
-    "description": " MCP Servers Stored"
+    "title": "Memescope Monday",
+    "description": " Coins Listed"
   },
   "faq": {
     "title": "FAQ",
-    "description": "Frequently Asked Questions about MCP Servers",
+    "description": "Frequently Asked Questions about Memescope Monday",
     "items": [
       {
-        "title": "What is MCP (Model Context Protocol)?",
-        "description": "MCP is an open-source protocol developed by Anthropic that enables AI systems like Claude to securely connect with various data sources. It provides a universal standard for AI assistants to access external data, tools, and prompts through a client-server architecture."
+        "title": "What is Memescope Monday?",
+        "description": "Memescope Monday is a weekly event where the crypto community comes together every Monday at 10 AM UTC to discover and trade the freshest memecoins. Everyone hops on their memescope, finds gems at low market caps, and rides them together for maximum volume and gains."
       },
       {
-        "title": "What are MCP Servers?",
-        "description": "MCP Servers are systems that provide context, tools, and prompts to AI clients. They can expose data sources like files, documents, databases, and API integrations, allowing AI assistants to access real-time information in a secure way."
+        "title": "When does Memescope Monday happen?",
+        "description": "Every Monday at 10 AM UTC. The countdown on the homepage shows exactly when the next session starts. Get on bright and early for the best entries!"
       },
       {
-        "title": "How do MCP Servers work?",
-        "description": "MCP Servers work through a simple client-server architecture. They expose data and tools through a standardized protocol, maintaining secure 1:1 connections with clients inside host applications like Claude Desktop."
+        "title": "Which chains are supported?",
+        "description": "We currently support Solana (including PumpFun launches), Base, and BNB Chain. Solana is the most popular chain for memecoins, but we welcome gems from all supported chains."
       },
       {
-        "title": "What can MCP Servers provide?",
-        "description": "MCP Servers can share resources (files, docs, data), expose tools (API integrations, actions), and provide prompts (templated interactions). They control their own resources and maintain clear system boundaries for security."
+        "title": "How do I submit a coin?",
+        "description": "Click 'Submit Coin' in the navigation bar. Fill in the coin name, ticker, chain, contract address, and description. You can submit existing coins or upcoming launches with a launch date countdown."
       },
       {
-        "title": "How does Claude use MCP?",
-        "description": "Claude can connect to MCP servers to access external data sources and tools, enhancing its capabilities with real-time information. Currently, this works with local MCP servers, with enterprise remote server support coming soon."
+        "title": "What are Expedited and Trending listings?",
+        "description": "Expedited Review ($19) gets your coin approved within 1 hour instead of waiting in the queue. Trending Placement ($49) features your coin in the Trending section for 24 hours. Bundle both for $59."
       },
       {
-        "title": "Are MCP Servers secure?",
-        "description": "Yes, security is built into the MCP protocol. Servers control their own resources, there's no need to share API keys with LLM providers, and the system maintains clear boundaries. Each server manages its own authentication and access control."
+        "title": "How does voting work?",
+        "description": "Upvote coins you believe in to push them up the directory rankings. The more votes a coin gets, the higher it appears in the listings. Rally your community to vote!"
       },
       {
-        "title": "What is mcp.so?",
-        "description": "mcp.so is a community-driven platform that collects and organizes third-party MCP Servers. It serves as a central directory where users can discover, share, and learn about various MCP Servers available for AI applications."
+        "title": "What is the trollbox chat?",
+        "description": "Each coin listing has a real-time trollbox where degens can discuss the coin, share alpha, post memes, and coordinate entries. Anonymous posting with randomly generated degen names."
       },
       {
-        "title": "How can I submit my MCP Server to mcp.so?",
-        "description": "You can submit your MCP Server by creating a new issue in our GitHub repository. Click the 'Submit' button in the navigation bar or visit our GitHub issues page directly. Please provide details about your server including its name, description, features, and connection information."
+        "title": "Can I submit upcoming launches?",
+        "description": "Yes! When submitting, select 'Upcoming Launch' and set the launch date. Your coin will display a countdown timer until launch, building hype and awareness before it goes live."
       }
     ]
   },
   "footer": {
     "brand": {
-      "title": "MCP Servers",
-      "description": "The largest collection of MCP Servers, featuring Awesome MCP Servers and Claude MCP integration.",
-      "domain": "https://mcp.so"
+      "title": "Memescope Monday",
+      "description": "The ultimate memecoin directory. Discover gems, vote for your favorites, and ride the Monday wave together.",
+      "domain": "https://memescope.monday.directory"
     },
     "copyright": {
-      "owner": "mcp.so",
+      "owner": "Memescope Monday",
       "text": "All rights reserved",
-      "url": "https://mcp.so",
+      "url": "https://memescope.monday.directory",
       "target": "_blank"
     },
     "nav": {
       "items": [
         {
-          "title": "About",
+          "title": "Directory",
+          "children": [
+            {
+              "title": "All Coins",
+              "url": "/",
+              "target": "_self"
+            },
+            {
+              "title": "Categories",
+              "url": "/categories",
+              "target": "_self"
+            },
+            {
+              "title": "Submit Coin",
+              "url": "/submit",
+              "target": "_self"
+            }
+          ]
+        },
+        {
+          "title": "Chains",
+          "children": [
+            {
+              "title": "Solana",
+              "url": "/category/solana",
+              "target": "_self"
+            },
+            {
+              "title": "Base",
+              "url": "/category/base",
+              "target": "_self"
+            },
+            {
+              "title": "BNB Chain",
+              "url": "/category/bnb",
+              "target": "_self"
+            }
+          ]
+        },
+        {
+          "title": "Community",
+          "children": [
+            {
+              "title": "Twitter",
+              "url": "https://twitter.com",
+              "target": "_blank"
+            },
+            {
+              "title": "Telegram",
+              "url": "https://t.me",
+              "target": "_blank"
+            },
+            {
+              "title": "Discord",
+              "url": "https://discord.gg",
+              "target": "_blank"
+            }
+          ]
+        },
+        {
+          "title": "Legal",
           "children": [
             {
               "title": "Privacy Policy",
@@ -105,65 +165,10 @@
               "title": "Terms of Service",
               "url": "/terms-of-service",
               "target": "_blank"
-            }
-          ]
-        },
-        {
-          "title": "Resources",
-          "children": [
-            {
-              "title": "Model Context Protocol",
-              "url": "https://www.anthropic.com/news/model-context-protocol",
-              "target": "_blank"
             },
             {
-              "title": "MCP Starter Guide",
-              "url": "https://modelcontextprotocol.io/introduction",
-              "target": "_blank"
-            },
-            {
-              "title": "Claude MCP Servers",
-              "url": "https://github.com/modelcontextprotocol/servers",
-              "target": "_blank"
-            }
-          ]
-        },
-        {
-          "title": "Community",
-          "children": [
-            {
-              "title": "Telegram",
-              "url": "https://t.me/+N0gv4O9SXio2YWU1",
-              "target": "_blank"
-            },
-            {
-              "title": "Discord",
-              "url": "https://discord.gg/RsYPRrnyqg",
-              "target": "_blank"
-            },
-            {
-              "title": "GitHub",
-              "url": "https://github.com/mcpservers/awesome-mcp-servers/issues/1",
-              "target": "_blank"
-            }
-          ]
-        },
-        {
-          "title": "Friends",
-          "children": [
-            {
-              "title": "ThinkAny",
-              "url": "https://thinkany.ai",
-              "target": "_blank"
-            },
-            {
-              "title": "HeyBeauty",
-              "url": "https://heybeauty.ai",
-              "target": "_blank"
-            },
-            {
-              "title": "PodLM",
-              "url": "https://podlm.ai",
+              "title": "Disclaimer",
+              "url": "/disclaimer",
               "target": "_blank"
             }
           ]
@@ -173,8 +178,8 @@
     "social": {
       "items": {
         "email": {
-          "title": "support@mcp.so",
-          "url": "mailto:support@mcp.so"
+          "title": "gm@memescope.monday.directory",
+          "url": "mailto:gm@memescope.monday.directory"
         }
       }
     }

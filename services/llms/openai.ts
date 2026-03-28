@@ -1,12 +1,6 @@
-import OpenAI, { ClientOptions } from "openai";
+// OpenAI client - not currently used for Memescope Monday
+// Kept as placeholder for future AI-powered features
 
-export function getOpenAIClient(model?: string): OpenAI {
-  const options: ClientOptions = {
-    baseURL: process.env.OPENAI_BASE_URL,
-    apiKey: process.env.OPENAI_API_KEY,
-  };
-
-  const openai = new OpenAI(options);
-
-  return openai;
+export function getOpenAIClient(): unknown {
+  return null;
 }

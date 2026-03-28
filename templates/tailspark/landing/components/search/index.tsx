@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  ChangeEvent,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface Props {
@@ -26,17 +21,16 @@ export default ({ query }: Props) => {
     if (e.code === "Enter" && !e.shiftKey) {
       if (e.keyCode !== 229) {
         e.preventDefault();
-        handleSubmit("", content);
+        handleSubmit(content);
       }
     }
   };
 
-  const handleSubmit = async (keyword: string, question: string) => {
+  const handleSubmit = async (question: string) => {
     try {
       const url = `?q=${encodeURIComponent(question)}`;
-      console.log("query url", url);
       await router.push(url);
-      setInputDisabled(true); // Disable input after navigation
+      setInputDisabled(true);
     } catch (e) {
       console.log("search failed: ", e);
       setInputDisabled(false);
@@ -51,44 +45,34 @@ export default ({ query }: Props) => {
   }, [query]);
 
   return (
-    <section className="relative mt-4 md:mt-8">
+    <section className="relative mt-6 md:mt-10">
       <div className="mx-auto w-full max-w-2xl px-6 text-center">
-        <form
-          method="POST"
-          action="/gpts/search"
-          className="flex items-center relative"
-        >
+        <div className="flex items-center relative">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="absolute left-4 w-5 h-5 text-[#8b8d98]"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
           <input
             type="text"
-            className="text-sm md:text-md flex-1 px-4 py-3 border-2 border-primary bg-white rounded-lg disabled:border-gray-300 disabled:text-gray-300"
-            placeholder="keyword to search"
+            className="w-full pl-12 pr-4 py-3 rounded-xl border border-[#2a2d3a] bg-[#181a25] text-white placeholder-[#8b8d98] text-sm focus:outline-none focus:border-[#00ff88]/50 disabled:opacity-50 transition-colors"
+            placeholder="Search coins by name, ticker, or category..."
             ref={inputRef}
             value={content}
             disabled={inputDisabled}
             onChange={handleInputChange}
             onKeyDown={handleInputKeydown}
           />
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="absolute right-4 cursor-pointer"
-            onClick={() => {
-              if (content) {
-                handleSubmit("", content);
-              }
-            }}
-          >
-            <polyline points="9 10 4 15 9 20"></polyline>
-            <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
-          </svg>
-        </form>
+        </div>
       </div>
     </section>
   );

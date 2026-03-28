@@ -1,47 +1,32 @@
 {
-  "name": "navfast",
+  "name": "memescope-monday",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "watch": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "pages:build": "npx @cloudflare/next-on-pages",
-    "preview": "pnpm pages:build && wrangler pages dev",
-    "deploy": "pnpm pages:build && wrangler pages deploy"
+    "lint": "next lint"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",
     "@heroicons/react": "^2.2.0",
     "@supabase/supabase-js": "^2.46.2",
     "framer-motion": "^11.13.1",
-    "highlight.js": "^11.10.0",
-    "markdown-it": "^14.1.0",
     "moment": "^2.30.1",
     "next": "15.0.4",
-    "next-themes": "^0.4.4",
-    "openai": "^4.76.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-icons": "^5.4.0",
-    "react-lazy-load-image-component": "^1.6.2",
-    "uuid": "^11.0.3",
-    "xmlbuilder": "^15.1.1"
+    "uuid": "^11.0.3"
   },
   "devDependencies": {
-    "@cloudflare/next-on-pages": "^1.13.6",
-    "@types/markdown-it": "^14.1.2",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "@types/react-lazy-load-image-component": "^1.6.4",
     "@types/uuid": "^10.0.0",
-    "next-dev": "link:@cloudflare/next-on-pages/next-dev",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5",
-    "vercel": "39.1.1"
+    "typescript": "^5"
   }
 }

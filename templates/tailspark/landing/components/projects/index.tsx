@@ -14,17 +14,17 @@ export default ({
     <section className="relative">
       <div className="mx-auto max-w-7xl px-5 py-4 md:px-10 md:py-4 lg:py-4">
         {!loading ? (
-          <div className="mb-8 gap-5 py-4 [column-count:1] md:mb-12 md:[column-count:2] lg:mb-16 lg:[column-count:3]">
-            {projects.map((item: Project, idx: number) => {
-              return (
-                <div key={idx}>
-                  <ProjectItem project={item} />
-                </div>
-              );
-            })}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {projects.map((item: Project, idx: number) => (
+              <div key={idx}>
+                <ProjectItem project={item} />
+              </div>
+            ))}
           </div>
         ) : (
-          <div className="mx-auto text-center">Loading data...</div>
+          <div className="mx-auto text-center text-[#8b8d98]">
+            Loading coins...
+          </div>
         )}
       </div>
     </section>

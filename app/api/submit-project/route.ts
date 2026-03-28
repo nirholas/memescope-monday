@@ -7,11 +7,11 @@ export const runtime = "edge";
 
 export async function POST(req: Request) {
   try {
-    let project: Project = await req.json();
+    const project: Project = await req.json();
 
     const parsedProject = parseProject(project);
     if (!parsedProject) {
-      return respErr("invalid project");
+      return respErr("invalid project: name and title are required");
     }
 
     const savedProject = await saveProject(parsedProject);

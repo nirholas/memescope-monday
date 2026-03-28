@@ -5,7 +5,7 @@ export default function ({ project }: { project: Project }) {
     <img
       src={project.img_url || project.avatar_url || ""}
       alt={project.title}
-      className="rounded-md"
+      className="rounded-lg border border-[#2a2d3a]"
     />
   );
 }

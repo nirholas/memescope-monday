@@ -7,7 +7,7 @@ export const runtime = "edge";
 
 export async function POST(req: Request) {
   try {
-    let projects: Project[] = await req.json();
+    const projects: Project[] = await req.json();
 
     const parsedProjects = projects.map((p) => parseProject(p));
     if (!parsedProjects) {
