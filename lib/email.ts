@@ -1,7 +1,13 @@
 import { Resend } from "resend"
 
-// Initialize Resend with API key
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Lazy-initialize Resend to avoid build errors when API key is not set
+let resend: Resend
+function getResend() {
+  if (!resend) {
+    resend = new Resend(process.env.RESEND_API_KEY)
+  }
+  return resend
+}
 
 interface EmailPayload {
   to: string
@@ -18,7 +24,7 @@ export async function sendEmail(payload: EmailPayload) {
   const { to, subject, html } = payload
 
   try {
-    const data = await resend.emails.send({
+    const data = await getResend().emails.send({
       from: "Memescope Monday <noreply@open-launch.com>",
       to,
       subject,
