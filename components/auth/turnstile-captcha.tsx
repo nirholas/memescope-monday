@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef } from "react"
+import { useEffect, useRef } from "react"
 
 import { Turnstile } from "@marsidev/react-turnstile"
 
@@ -12,18 +12,22 @@ export function TurnstileCaptcha({ onVerify }: TurnstileCaptchaProps) {
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
   const ref = useRef(null)
 
-  if (!siteKey) {
-    console.error("Turnstile site key is not defined")
-    return null
-  }
+  const isDisabled = !siteKey || siteKey === "placeholder" || process.env.NODE_ENV === "development"
 
-  if (process.env.NODE_ENV === "development") return null
+  // When Turnstile is not configured, auto-pass so forms aren't blocked
+  useEffect(() => {
+    if (isDisabled) {
+      onVerify("turnstile-disabled")
+    }
+  }, [isDisabled, onVerify])
+
+  if (isDisabled) return null
 
   return (
     <div className="flex justify-center">
       <Turnstile
         ref={ref}
-        siteKey={siteKey}
+        siteKey={siteKey!}
         onSuccess={onVerify}
         onError={() => console.error("Turnstile verification error")}
         onExpire={() => console.warn("Turnstile verification expired")}

@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 
 function getNextMondayUTC(): Date {
   const now = new Date()
@@ -32,7 +33,20 @@ export function CountdownTimer() {
   if (!mounted) return null
 
   const target = getNextMondayUTC()
-  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+  const monthNames = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ]
   const dateLabel = `${monthNames[target.getUTCMonth()]} ${target.getUTCDate()}`
 
   const days = Math.floor(diff / 86400000)
@@ -43,45 +57,89 @@ export function CountdownTimer() {
 
   if (isLive) {
     return (
-      <div className="bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800 flex items-center justify-center gap-2 rounded-lg border px-4 py-3">
-        <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-emerald-500" />
-        <span className="text-sm font-bold tracking-wider text-emerald-700 uppercase dark:text-emerald-400">
-          MEMESCOPE MONDAY IS LIVE
-        </span>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 p-6 text-white shadow-lg">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="flex h-3 w-3 items-center justify-center">
+              <span className="absolute h-3 w-3 animate-ping rounded-full bg-white opacity-75" />
+              <span className="relative h-2.5 w-2.5 rounded-full bg-white" />
+            </span>
+            <div>
+              <h2 className="text-lg font-bold tracking-tight sm:text-xl">
+                Memescope Monday is LIVE
+              </h2>
+              <p className="text-sm text-white/80">Vote for your favorite memecoins now!</p>
+            </div>
+          </div>
+          <Link
+            href="/projects/submit"
+            className="hidden rounded-lg bg-white px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm transition-all hover:bg-white/90 hover:shadow-md sm:block"
+          >
+            Submit Coin
+          </Link>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="bg-secondary/50 border-border/40 rounded-lg border p-4">
-      <p className="text-muted-foreground mb-3 text-center text-xs font-medium tracking-wider uppercase">
-        Memescope Monday {dateLabel} 10AM UTC
-      </p>
-      <div className="flex justify-center gap-3">
-        {[
-          { val: days, label: "Days" },
-          { val: hours, label: "Hours" },
-          { val: minutes, label: "Mins" },
-          { val: seconds, label: "Secs" },
-        ].map((item) => (
-          <div key={item.label} className="flex flex-col items-center">
-            <span className="text-foreground text-2xl font-bold tabular-nums md:text-3xl">
-              {String(item.val).padStart(2, "0")}
-            </span>
-            <span className="text-muted-foreground text-[10px] uppercase">{item.label}</span>
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 p-6 text-white shadow-lg sm:p-8">
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
+      <div className="relative">
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <p className="mb-1 text-xs font-medium tracking-widest text-white/60 uppercase">
+              Next Launch
+            </p>
+            <h2 className="text-lg font-bold tracking-tight sm:text-xl">
+              Memescope Monday — {dateLabel}
+            </h2>
           </div>
-        ))}
-      </div>
-      <div className="mt-3 flex justify-center gap-2">
-        <span className="inline-flex items-center rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-medium text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
-          ◎ Solana
-        </span>
-        <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-          Base
-        </span>
-        <span className="inline-flex items-center rounded-full bg-yellow-100 px-2 py-0.5 text-[10px] font-medium text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
-          BNB
-        </span>
+          <div className="hidden items-center gap-2 sm:flex">
+            <span className="rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-medium backdrop-blur-sm">
+              ◎ Solana
+            </span>
+            <span className="rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-medium backdrop-blur-sm">
+              Base
+            </span>
+            <span className="rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-medium backdrop-blur-sm">
+              BNB
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-end justify-between">
+          <div className="flex gap-3 sm:gap-4">
+            {[
+              { val: days, label: "days" },
+              { val: hours, label: "hrs" },
+              { val: minutes, label: "min" },
+              { val: seconds, label: "sec" },
+            ].map((item, i) => (
+              <div key={item.label} className="flex items-center gap-3 sm:gap-4">
+                <div className="text-center">
+                  <div className="rounded-lg bg-white/15 px-3 py-2 font-mono text-2xl font-bold tabular-nums backdrop-blur-sm sm:px-4 sm:text-3xl">
+                    {String(item.val).padStart(2, "0")}
+                  </div>
+                  <span className="mt-1 block text-[10px] font-medium tracking-wider text-white/50 uppercase">
+                    {item.label}
+                  </span>
+                </div>
+                {i < 3 && (
+                  <span className="mb-4 text-xl font-bold text-white/30 sm:text-2xl">:</span>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <Link
+            href="/projects/submit"
+            className="hidden rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-purple-700 shadow-sm transition-all hover:bg-white/90 hover:shadow-md sm:block"
+          >
+            Submit Early
+          </Link>
+        </div>
       </div>
     </div>
   )

@@ -4,8 +4,6 @@ import Link from "next/link"
 
 import { RiArrowRightLine } from "@remixicon/react"
 
-import { Button } from "@/components/ui/button"
-
 import { ProjectCard } from "./project-card"
 
 interface Project {
@@ -34,6 +32,7 @@ interface ProjectSectionProps {
   moreHref?: string
   sortByUpvotes?: boolean
   isAuthenticated: boolean
+  subtitle?: string
 }
 
 export function ProjectSection({
@@ -42,6 +41,7 @@ export function ProjectSection({
   moreHref,
   sortByUpvotes = false,
   isAuthenticated,
+  subtitle,
 }: ProjectSectionProps) {
   const sortedProjects = sortByUpvotes
     ? [...projects].sort((a, b) => (b.upvoteCount ?? 0) - (a.upvoteCount ?? 0))
@@ -49,19 +49,23 @@ export function ProjectSection({
 
   return (
     <section>
-      <div className="flex items-center justify-between mb-1">
-        <h2 className="text-lg font-bold sm:text-xl">{title}</h2>
+      <div className="mb-2 flex items-end justify-between">
+        <div>
+          <h2 className="text-lg font-bold tracking-tight sm:text-xl">{title}</h2>
+          {subtitle && <p className="text-muted-foreground mt-0.5 text-xs">{subtitle}</p>}
+        </div>
         {moreHref && (
-          <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" asChild>
-            <Link href={moreHref} className="flex items-center gap-1">
-              View all <RiArrowRightLine className="h-3.5 w-3.5" />
-            </Link>
-          </Button>
+          <Link
+            href={moreHref}
+            className="text-muted-foreground hover:text-primary flex items-center gap-1 text-xs font-medium transition-colors"
+          >
+            View all <RiArrowRightLine className="h-3.5 w-3.5" />
+          </Link>
         )}
       </div>
 
       {sortedProjects.length > 0 ? (
-        <div className="rounded-xl border border-border/60 bg-card overflow-hidden">
+        <div className="border-border/60 bg-card overflow-hidden rounded-xl border shadow-sm">
           {sortedProjects.map((project, index) => (
             <ProjectCard
               key={project.id}
@@ -86,8 +90,12 @@ export function ProjectSection({
           ))}
         </div>
       ) : (
-        <div className="text-muted-foreground rounded-xl border border-dashed border-border/60 bg-card py-8 text-center text-sm">
-          No coins found
+        <div className="text-muted-foreground border-border/60 bg-card rounded-xl border border-dashed py-10 text-center text-sm">
+          No coins found yet. Be the first to{" "}
+          <Link href="/projects/submit" className="text-primary hover:underline">
+            submit one
+          </Link>
+          .
         </div>
       )}
     </section>

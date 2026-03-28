@@ -16,7 +16,9 @@ export async function getDexScreenerPairs(contractAddress: string): Promise<DexS
   }
 }
 
-export async function getDexScreenerTopPair(contractAddress: string): Promise<DexScreenerPair | null> {
+export async function getDexScreenerTopPair(
+  contractAddress: string,
+): Promise<DexScreenerPair | null> {
   const pairs = await getDexScreenerPairs(contractAddress)
   if (!pairs.length) return null
   // Return highest liquidity pair
@@ -30,7 +32,17 @@ export function getDexScreenerEmbedUrl(chain: string, contractAddress: string): 
     bnb: "bsc",
     ethereum: "ethereum",
   }
-  return `https://dexscreener.com/${chainMap[chain] || "solana"}/${contractAddress}?embed=1&theme=light&info=0`
+  return `https://dexscreener.com/${chainMap[chain] || "solana"}/${contractAddress}?embed=1&theme=dark&info=0&trades=0`
+}
+
+export function getGeckoTerminalEmbedUrl(chain: string, contractAddress: string): string {
+  const chainMap: Record<string, string> = {
+    solana: "solana",
+    base: "base",
+    bnb: "bsc",
+    ethereum: "eth",
+  }
+  return `https://www.geckoterminal.com/${chainMap[chain] || "solana"}/pools/${contractAddress}?embed=1&info=0&swaps=0`
 }
 
 export function getDexScreenerPageUrl(chain: string, contractAddress: string): string {

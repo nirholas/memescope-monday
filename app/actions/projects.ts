@@ -15,6 +15,7 @@ import {
 import { and, asc, count, desc, eq, or, sql } from "drizzle-orm"
 
 import { auth } from "@/lib/auth"
+import { notifyXNewCoin } from "@/lib/x-notification"
 
 // Fonction pour générer un slug unique
 async function generateUniqueSlug(name: string): Promise<string> {
@@ -241,13 +242,7 @@ export async function submitProject(projectData: ProjectSubmissionData) {
     } = projectData
 
     // Validation
-    if (
-      !name ||
-      !description ||
-      !websiteUrl ||
-      !logoUrl ||
-      categories.length === 0
-    ) {
+    if (!name || !description || !websiteUrl || !logoUrl || categories.length === 0) {
       return { success: false, error: "Missing required fields" }
     }
 
@@ -292,6 +287,14 @@ export async function submitProject(projectData: ProjectSubmissionData) {
         })),
       )
     }
+
+    // Post to X in the background (don't block submission)
+    notifyXNewCoin({
+      name,
+      ticker,
+      chain,
+      slug: newProject.slug,
+    }).catch((err) => console.error("[X Notification] Failed:", err))
 
     return { success: true, projectId: newProject.id, slug: newProject.slug }
   } catch (error) {

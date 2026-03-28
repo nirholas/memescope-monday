@@ -17,11 +17,13 @@ import {
 import { format } from "date-fns"
 
 import { auth } from "@/lib/auth"
-import { getDexScreenerEmbedUrl } from "@/lib/coin-data/dexscreener"
+import { getDexScreenerEmbedUrl, getGeckoTerminalEmbedUrl } from "@/lib/coin-data/dexscreener"
 import { getProjectWebsiteRelAttribute } from "@/lib/link-utils"
 import { Button } from "@/components/ui/button"
 import { RichTextDisplay } from "@/components/ui/rich-text-editor"
 import { BoostListing } from "@/components/coin/boost-listing"
+import { ChartEmbed } from "@/components/coin/chart-embed"
+import { CopyAddress } from "@/components/coin/copy-address"
 import { RelatedCoins } from "@/components/coin/related-coins"
 import { SafetyScore } from "@/components/coin/safety-score"
 import { SocialBuzz } from "@/components/coin/social-buzz"
@@ -398,15 +400,18 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                   alt={`${projectData.name} - Product Image`}
                 />
               )}
-              {/* DexScreener Chart */}
+              {/* Price Chart */}
               {projectData.contractAddress && projectData.chain && (
-                <div className="overflow-hidden rounded-lg border">
-                  <iframe
-                    src={getDexScreenerEmbedUrl(projectData.chain, projectData.contractAddress)}
-                    className="h-[400px] w-full border-0"
-                    title="DexScreener Chart"
-                  />
-                </div>
+                <ChartEmbed
+                  dexScreenerUrl={getDexScreenerEmbedUrl(
+                    projectData.chain,
+                    projectData.contractAddress,
+                  )}
+                  geckoTerminalUrl={getGeckoTerminalEmbedUrl(
+                    projectData.chain,
+                    projectData.contractAddress,
+                  )}
+                />
               )}
 
               {/* Description */}
@@ -472,36 +477,32 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                   </div>
                 )}
 
-              {/* Publisher */}
-              <div className="space-y-3">
-                <h3 className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
-                  Publisher
-                </h3>
-                <div className="flex items-center gap-3">
-                  {projectData.creator ? (
-                    <>
-                      {projectData.creator.image ? (
-                        <img
-                          src={projectData.creator.image}
-                          alt={projectData.creator.name || "Creator avatar"}
-                          className="h-10 w-10 rounded-full"
-                        />
-                      ) : (
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-sm font-medium text-blue-600">
-                          {projectData.creator.name?.charAt(0) || "U"}
-                        </div>
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <p className="text-foreground text-sm font-medium">
-                          {projectData.creator.name}
-                        </p>
+              {/* Publisher - only show when creator is known */}
+              {projectData.creator && (
+                <div className="space-y-3">
+                  <h3 className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
+                    Publisher
+                  </h3>
+                  <div className="flex items-center gap-3">
+                    {projectData.creator.image ? (
+                      <img
+                        src={projectData.creator.image}
+                        alt={projectData.creator.name || "Creator avatar"}
+                        className="h-10 w-10 rounded-full"
+                      />
+                    ) : (
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-sm font-medium text-blue-600">
+                        {projectData.creator.name?.charAt(0) || "U"}
                       </div>
-                    </>
-                  ) : (
-                    <span className="text-muted-foreground text-sm">Unknown creator</span>
-                  )}
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-foreground text-sm font-medium">
+                        {projectData.creator.name}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Coin Data */}
               {projectData.contractAddress && (
@@ -515,13 +516,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                         Contract
                       </span>
                       <div className="border-muted-foreground/30 mx-3 flex-1 border-b border-dotted"></div>
-                      <span
-                        className="text-foreground font-mono text-sm font-medium"
-                        title={projectData.contractAddress}
-                      >
-                        {projectData.contractAddress.slice(0, 6)}...
-                        {projectData.contractAddress.slice(-4)}
-                      </span>
+                      <CopyAddress address={projectData.contractAddress} />
                     </div>
                     {projectData.marketCap != null && (
                       <div className="flex items-center justify-between">

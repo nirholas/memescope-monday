@@ -1,24 +1,26 @@
 import Link from "next/link"
 
+import { CheckoutButton } from "@/components/pricing/checkout-button"
+
 export function BoostListing() {
   const tiers = [
     {
-      name: "Expedited Review",
-      price: "$19",
-      description: "Skip the queue. Reviewed within 1 hour.",
-      href: "/pricing?plan=expedited",
-    },
-    {
-      name: "Trending Placement",
+      name: "Fast Track",
       price: "$49",
-      description: "24h featured in the Trending section.",
-      href: "/pricing?plan=trending",
+      description: "Listed within 12 hours + trending badge.",
+      stripeTier: "fast_track",
     },
     {
-      name: "Bundle (Both)",
-      price: "$59",
-      description: "Expedited review + 24h trending placement.",
-      href: "/pricing?plan=bundle",
+      name: "Sponsorship",
+      price: "$99",
+      description: "7-day featured placement on homepage.",
+      stripeTier: "sponsorship",
+    },
+    {
+      name: "Premium",
+      price: "$399",
+      description: "30-day top placement across all pages.",
+      stripeTier: "premium",
       highlight: true,
     },
   ]
@@ -27,24 +29,33 @@ export function BoostListing() {
     <div className="space-y-3">
       <div>
         <h3 className="text-sm font-semibold">Boost Your Listing</h3>
-        <p className="text-muted-foreground mt-0.5 text-xs">Get more visibility for your coin.</p>
+        <p className="text-muted-foreground mt-0.5 text-xs">
+          Get more visibility for your coin.{" "}
+          <Link href="/pricing" className="hover:text-foreground underline">
+            See all plans
+          </Link>
+        </p>
       </div>
 
       <div className="space-y-2">
         {tiers.map((tier) => (
-          <Link
+          <div
             key={tier.name}
-            href={tier.href}
-            className={`hover:bg-muted/40 block rounded-lg border p-3 transition-colors ${
+            className={`rounded-lg border p-3 ${
               tier.highlight ? "border-primary/40 bg-primary/5" : "border-border/60"
             }`}
           >
-            <div className="mb-0.5 flex items-center justify-between">
+            <div className="mb-1.5 flex items-center justify-between">
               <span className="text-sm font-medium">{tier.name}</span>
               <span className="text-primary text-sm font-bold">{tier.price}</span>
             </div>
-            <p className="text-muted-foreground text-xs">{tier.description}</p>
-          </Link>
+            <p className="text-muted-foreground mb-2 text-xs">{tier.description}</p>
+            <CheckoutButton
+              tier={tier.stripeTier}
+              label={`Pay ${tier.price}`}
+              highlighted={tier.highlight}
+            />
+          </div>
         ))}
       </div>
     </div>

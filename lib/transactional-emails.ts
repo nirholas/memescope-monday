@@ -60,7 +60,7 @@ export async function sendWinnerBadgeEmail({
       
       ${doFollowMessage}
 
-      <p style="margin-top: 25px;">Congrats! 🎉<br>Eric</p>
+      <p style="margin-top: 25px;">Congrats! 🎉<br>swarmsy</p>
     </div>
   `
 

@@ -39,6 +39,21 @@ interface ProjectCardProps {
   ticker?: string | null
 }
 
+function getChainStyle(chain: string) {
+  switch (chain) {
+    case "solana":
+      return "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300"
+    case "base":
+      return "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
+    case "bnb":
+      return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300"
+    case "ethereum":
+      return "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300"
+    default:
+      return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+  }
+}
+
 export function ProjectCard({
   id,
   slug,
@@ -63,27 +78,34 @@ export function ProjectCard({
 
   return (
     <div
-      className="group cursor-pointer border-b border-border/50 px-2 py-4 transition-colors hover:bg-muted/40 sm:px-4"
+      className="group border-border/40 hover:bg-accent/50 relative cursor-pointer border-b px-3 py-4 transition-all duration-200 sm:px-5"
       onClick={(e) => {
         e.stopPropagation()
         router.push(projectPageUrl)
       }}
     >
       <div className="flex items-center gap-3 sm:gap-4">
+        {/* Rank Number */}
+        {typeof index === "number" && (
+          <span className="text-muted-foreground/60 hidden w-5 text-right text-sm font-bold tabular-nums sm:block">
+            {index + 1}
+          </span>
+        )}
+
         {/* Logo */}
         <div className="flex-shrink-0">
-          <div className="relative h-12 w-12 overflow-hidden rounded-lg border border-border/60 bg-muted/30 sm:h-14 sm:w-14">
+          <div className="border-border/60 bg-background relative h-14 w-14 overflow-hidden rounded-xl border shadow-sm transition-shadow group-hover:shadow-md sm:h-16 sm:w-16">
             {logoUrl ? (
               <Image
                 src={logoUrl}
                 alt={`${name} logo`}
                 fill
-                className="object-contain p-1"
-                sizes="(max-width: 640px) 48px, 56px"
+                className="object-cover"
+                sizes="(max-width: 640px) 56px, 64px"
                 unoptimized
               />
             ) : (
-              <span className="text-muted-foreground flex h-full w-full items-center justify-center text-lg font-bold">
+              <span className="text-muted-foreground flex h-full w-full items-center justify-center text-xl font-bold">
                 {name.charAt(0)}
               </span>
             )}
@@ -92,60 +114,53 @@ export function ProjectCard({
 
         {/* Content */}
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <Link href={projectPageUrl} onClick={(e) => e.stopPropagation()}>
-              <h3 className="group-hover:text-primary line-clamp-1 text-sm font-semibold transition-colors sm:text-base">
-                {typeof index === "number" ? `${index + 1}. ` : ""}
+              <h3 className="group-hover:text-primary line-clamp-1 text-[15px] font-semibold tracking-tight transition-colors sm:text-base">
                 {name}
               </h3>
             </Link>
             {ticker && (
-              <span className="text-muted-foreground text-xs font-medium">${ticker}</span>
+              <span className="text-muted-foreground bg-muted/60 rounded px-1.5 py-0.5 text-[11px] font-medium">
+                ${ticker}
+              </span>
             )}
             {websiteUrl && (
               <a
                 href={websiteUrl}
                 target="_blank"
                 rel={getProjectWebsiteRelAttribute({ launchStatus, launchType, dailyRanking })}
-                className="text-muted-foreground hover:text-primary inline-flex transition-colors"
+                className="text-muted-foreground/50 hover:text-primary inline-flex transition-colors"
                 onClick={(e) => e.stopPropagation()}
-                title={`Visit ${name} website`}
+                title={`Visit ${name}`}
               >
                 <RiExternalLinkLine className="h-3.5 w-3.5" />
               </a>
             )}
           </div>
 
-          <p className="text-muted-foreground mt-0.5 line-clamp-1 text-xs sm:text-sm">
+          <p className="text-muted-foreground mt-0.5 line-clamp-1 text-[13px] leading-relaxed sm:text-sm">
             {stripHtml(description)}
           </p>
 
-          <div className="mt-1.5 flex flex-wrap items-center gap-1 text-xs">
-            {categories.slice(0, 3).map((cat, i) => (
-              <span key={cat.id} className="flex items-center gap-1">
-                {i > 0 && <span className="text-muted-foreground/40">·</span>}
-                <Link
-                  href={`/categories?category=${cat.id}`}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {cat.name}
-                </Link>
-              </span>
-            ))}
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
             {chain && (
-              <>
-                {categories.length > 0 && <span className="text-muted-foreground/40">·</span>}
-                <span className={`inline-flex items-center gap-0.5 font-medium ${
-                  chain === "solana" ? "text-purple-600 dark:text-purple-400"
-                  : chain === "base" ? "text-blue-600 dark:text-blue-400"
-                  : chain === "bnb" ? "text-yellow-600 dark:text-yellow-400"
-                  : "text-indigo-600 dark:text-indigo-400"
-                }`}>
-                  {chain.charAt(0).toUpperCase() + chain.slice(1)}
-                </span>
-              </>
+              <span
+                className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${getChainStyle(chain)}`}
+              >
+                {chain.charAt(0).toUpperCase() + chain.slice(1)}
+              </span>
             )}
+            {categories.slice(0, 3).map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/categories?category=${cat.id}`}
+                className="text-muted-foreground hover:text-foreground hover:bg-muted/80 bg-muted/40 rounded-full px-2 py-0.5 text-[11px] font-medium transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {cat.name}
+              </Link>
+            ))}
           </div>
         </div>
 

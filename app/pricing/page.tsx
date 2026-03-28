@@ -9,6 +9,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
+import { CheckoutButton } from "@/components/pricing/checkout-button"
 
 export const metadata = {
   title: "Pricing - Memescope Monday",
@@ -38,7 +39,7 @@ const faqItems = [
     id: "4",
     title: "How do I pay?",
     content:
-      "All paid tiers are paid in SOL. Contact @nichxbt on Telegram or X to arrange payment and get started.",
+      "You can pay with a credit card via Stripe, or with SOL/crypto by contacting @swarminged on Telegram or X.",
   },
   {
     id: "5",
@@ -60,12 +61,13 @@ const tiers = [
       "Chain badge display",
     ],
     highlighted: false,
-    cta: { label: "Submit Your Coin", href: "/projects/submit" },
     isFree: true,
+    stripeTier: null,
   },
   {
     name: "Fast Track",
-    price: "0.45 SOL",
+    price: "$49",
+    solPrice: "0.45 SOL",
     description: "Get listed fast with priority placement.",
     features: [
       "Listed within 12 hours (usually instant)",
@@ -74,12 +76,13 @@ const tiers = [
       "All free features included",
     ],
     highlighted: true,
-    cta: { label: "Contact @nichxbt", href: "https://t.me/nichxbt" },
     isFree: false,
+    stripeTier: "fast_track",
   },
   {
     name: "Sponsorship",
-    price: "0.9 SOL",
+    price: "$99",
+    solPrice: "0.9 SOL",
     description: "Featured placement with maximum visibility.",
     features: [
       "Featured in Sponsors section on homepage",
@@ -88,12 +91,13 @@ const tiers = [
       "All Fast Track features",
     ],
     highlighted: false,
-    cta: { label: "Contact @nichxbt", href: "https://t.me/nichxbt" },
     isFree: false,
+    stripeTier: "sponsorship",
   },
   {
     name: "Premium Sponsorship",
-    price: "4 SOL",
+    price: "$399",
+    solPrice: "4 SOL",
     description: "Maximum exposure across the entire platform.",
     features: [
       "Top of directory for 30 days",
@@ -102,8 +106,8 @@ const tiers = [
       "All Sponsorship features",
     ],
     highlighted: false,
-    cta: { label: "Contact @nichxbt", href: "https://t.me/nichxbt" },
     isFree: false,
+    stripeTier: "premium",
   },
 ]
 
@@ -113,7 +117,7 @@ export default function PricingPage() {
       <div className="mb-8 text-center">
         <h1 className="mb-3 text-2xl font-bold sm:text-3xl">Listing & Sponsorship Pricing</h1>
         <p className="text-muted-foreground mx-auto max-w-2xl text-sm">
-          Get the visibility your memecoin deserves. Choose the tier that fits your goals.
+          Get the visibility your memecoin deserves. Pay with card or crypto.
         </p>
       </div>
 
@@ -123,14 +127,15 @@ export default function PricingPage() {
           <div
             key={tier.name}
             className={`flex flex-col rounded-lg border p-5 ${
-              tier.highlighted
-                ? "border-primary/40 bg-primary/5 ring-primary/20 ring-1"
-                : ""
+              tier.highlighted ? "border-primary/40 bg-primary/5 ring-primary/20 ring-1" : ""
             }`}
           >
             <div className="flex-grow">
               <h3 className="mb-1 text-base font-semibold">{tier.name}</h3>
-              <div className="mb-2 text-2xl font-bold">{tier.price}</div>
+              <div className="mb-0.5 text-2xl font-bold">{tier.price}</div>
+              {tier.solPrice && (
+                <p className="text-muted-foreground mb-2 text-xs">or {tier.solPrice}</p>
+              )}
               <p className="text-muted-foreground mb-4 text-xs">{tier.description}</p>
 
               <ul className="mb-5 space-y-2 text-sm">
@@ -147,22 +152,24 @@ export default function PricingPage() {
               </ul>
             </div>
 
-            <div className="mt-auto pt-3">
+            <div className="mt-auto space-y-2 pt-3">
               {tier.isFree ? (
                 <Button variant="outline" size="sm" className="w-full" asChild>
-                  <Link href={tier.cta.href}>{tier.cta.label}</Link>
+                  <Link href="/projects/submit">Submit Your Coin</Link>
                 </Button>
               ) : (
-                <Button
-                  size="sm"
-                  className="w-full"
-                  variant={tier.highlighted ? "default" : "outline"}
-                  asChild
-                >
-                  <Link href={tier.cta.href} target="_blank" rel="noopener noreferrer">
-                    {tier.cta.label}
-                  </Link>
-                </Button>
+                <>
+                  <CheckoutButton
+                    tier={tier.stripeTier!}
+                    label={`Pay ${tier.price}`}
+                    highlighted={tier.highlighted}
+                  />
+                  <Button size="sm" variant="ghost" className="w-full text-xs" asChild>
+                    <Link href="https://t.me/swarminged" target="_blank" rel="noopener noreferrer">
+                      Pay with crypto →
+                    </Link>
+                  </Button>
+                </>
               )}
             </div>
           </div>
@@ -172,18 +179,18 @@ export default function PricingPage() {
       {/* Contact CTA */}
       <div className="mx-auto mb-12 max-w-2xl text-center">
         <div className="rounded-lg border p-6">
-          <h2 className="mb-2 text-lg font-semibold">Ready to get listed?</h2>
+          <h2 className="mb-2 text-lg font-semibold">Prefer to pay with crypto?</h2>
           <p className="text-muted-foreground mb-4 text-sm">
-            For paid tiers, reach out to @nichxbt on Telegram or X to get started.
+            Reach out to @swarminged on Telegram or X to pay with SOL or other crypto.
           </p>
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button size="sm" asChild>
-              <Link href="https://t.me/nichxbt" target="_blank" rel="noopener noreferrer">
+              <Link href="https://t.me/swarminged" target="_blank" rel="noopener noreferrer">
                 Contact on Telegram
               </Link>
             </Button>
             <Button size="sm" variant="outline" asChild>
-              <Link href="https://x.com/nichxbt" target="_blank" rel="noopener noreferrer">
+              <Link href="https://x.com/swarminged" target="_blank" rel="noopener noreferrer">
                 Contact on X
               </Link>
             </Button>

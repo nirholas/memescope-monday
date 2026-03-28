@@ -23,7 +23,7 @@ const connectLinkItems = [
     label: "GitHub",
   },
   {
-    href: "https://twitter.com/swarminged",
+    href: "https://x.com/swarminged",
     icon: RiTwitterXFill,
     label: "Twitter / X",
   },
@@ -42,7 +42,8 @@ export default function FooterSection() {
               </span>
             </Link>
             <p className="text-muted-foreground text-sm">
-              © {new Date().getFullYear()} Memescope Monday. All rights reserved. Not financial advice. DYOR.
+              © {new Date().getFullYear()} Memescope Monday. All rights reserved. Not financial
+              advice. DYOR.
             </p>
             <p className="text-muted-foreground mb-4 text-sm">
               Open source project by{" "}

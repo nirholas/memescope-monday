@@ -61,7 +61,7 @@ export function SignUpForm() {
       name: data.name,
       email: data.email,
       password: data.password,
-      callbackURL: "/verify-email/success",
+      callbackURL: "/dashboard",
       fetchOptions: {
         headers: {
           "x-captcha-response": turnstileToken,
@@ -74,7 +74,7 @@ export function SignUpForm() {
       setGeneralError(null)
 
       await signUp.email(options)
-      router.push("/verify-email/sent")
+      router.push("/dashboard")
     } catch (error) {
       setGeneralError(error instanceof Error ? error.message : "An error occurred")
     } finally {
