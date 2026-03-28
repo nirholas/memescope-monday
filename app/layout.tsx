@@ -21,7 +21,7 @@ const fontHeading = FontHeading({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_URL!),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_URL || "https://memescopemonday.com"),
   title: "Memescope Monday - Discover the Hottest Memecoins",
   description:
     "Memescope Monday is the ultimate memecoin directory. Discover, submit, and vote on the hottest memecoins across Solana, Base, and BNB Chain every Monday at 10 AM UTC.",

@@ -1,7 +1,13 @@
 import Redis from "ioredis"
 
-// Créer un client Redis
-const redis = new Redis(process.env.REDIS_URL || "")
+// Créer un client Redis (lazy-initialized)
+let redis: Redis
+function getRedis() {
+  if (!redis) {
+    redis = new Redis(process.env.REDIS_URL || "")
+  }
+  return redis
+}
 
 export async function checkRateLimit(
   identifier: string,
@@ -17,6 +23,7 @@ export async function checkRateLimit(
   const windowStart = now - window
 
   try {
+    const redis = getRedis()
     // Nettoyer les anciennes requêtes
     await redis.zremrangebyscore(key, 0, windowStart)
 
