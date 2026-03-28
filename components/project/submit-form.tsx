@@ -35,15 +35,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { RichTextDisplay, RichTextEditor } from "@/components/ui/rich-text-editor"
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { notifyDiscordLaunch } from "@/app/actions/discord"
 import {
   scheduleLaunch,
