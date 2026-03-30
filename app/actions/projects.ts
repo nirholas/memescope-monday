@@ -17,26 +17,7 @@ import { and, asc, count, desc, eq, or, sql } from "drizzle-orm"
 import { auth } from "@/lib/auth"
 import { notifyXNewCoin } from "@/lib/x-notification"
 
-// Fonction pour générer un slug unique
-async function generateUniqueSlug(name: string): Promise<string> {
-  const baseSlug = name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-
-  // Vérifier si le slug existe déjà dans la table project
-  const existingProject = await db.query.project.findFirst({
-    where: eq(projectTable.slug, baseSlug),
-  })
-
-  if (!existingProject) {
-    return baseSlug
-  }
-
-  // Si le slug existe, ajouter un nombre aléatoire
-  const randomSuffix = Math.floor(Math.random() * 10000)
-  return `${baseSlug}-${randomSuffix}`
-}
+import { generateUniqueSlug } from "@/lib/slug"
 
 // Get session helper
 async function getSession() {

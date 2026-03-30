@@ -14,6 +14,7 @@ import { eq } from "drizzle-orm"
 import { LAUNCH_SETTINGS } from "@/lib/constants"
 import { notifyXNewCoin } from "@/lib/x-notification"
 import { checkRateLimit } from "@/lib/rate-limit"
+import { generateUniqueSlug } from "@/lib/slug"
 
 // ---------------------------------------------------------------------------
 // Validation
@@ -66,22 +67,6 @@ const submitProjectSchema = z.object({
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-async function generateUniqueSlug(name: string): Promise<string> {
-  const baseSlug = name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-
-  const existing = await db.query.project.findFirst({
-    where: eq(projectTable.slug, baseSlug),
-  })
-
-  if (!existing) return baseSlug
-
-  const randomSuffix = Math.floor(Math.random() * 10000)
-  return `${baseSlug}-${randomSuffix}`
-}
 
 function authenticateApiKey(request: NextRequest): boolean {
   const apiKey = process.env.SUBMIT_API_KEY

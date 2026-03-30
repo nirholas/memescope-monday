@@ -15,6 +15,7 @@ import { LAUNCH_SETTINGS } from "@/lib/constants"
 import { getPumpFunCoin, getPumpFunGraduatedCoins } from "@/lib/coin-data/pumpfun"
 import { enrichCoinData } from "@/lib/coin-data/enrichment"
 import { notifyXNewCoin } from "@/lib/x-notification"
+import { generateUniqueSlug } from "@/lib/slug"
 
 // Vercel cron sends CRON_SECRET; also support legacy CRON_API_KEY
 const CRON_SECRET = process.env.CRON_SECRET
@@ -27,22 +28,6 @@ export const maxDuration = 60
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-async function generateUniqueSlug(name: string): Promise<string> {
-  const baseSlug = name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-
-  const existing = await db.query.project.findFirst({
-    where: eq(projectTable.slug, baseSlug),
-  })
-
-  if (!existing) return baseSlug
-
-  const randomSuffix = Math.floor(Math.random() * 10000)
-  return `${baseSlug}-${randomSuffix}`
-}
 
 /** Pick a random user ID from the database */
 async function getRandomUserId(): Promise<string | null> {

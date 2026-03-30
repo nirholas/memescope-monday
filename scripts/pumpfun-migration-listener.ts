@@ -28,6 +28,7 @@ import {
   user as userTable,
 } from "../drizzle/db/schema"
 import { enrichCoinData } from "../lib/coin-data/enrichment"
+import { generateUniqueSlug } from "../lib/slug"
 import { getPumpFunCoin } from "../lib/coin-data/pumpfun"
 import { notifyXNewCoin } from "../lib/x-notification"
 
@@ -121,21 +122,6 @@ let pumpPortalWs: WebSocket | null = null
 
 function log(msg: string) {
   console.log(`[${new Date().toISOString()}] ${msg}`)
-}
-
-async function generateUniqueSlug(name: string): Promise<string> {
-  const baseSlug = name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-
-  const existing = await db.query.project.findFirst({
-    where: eq(projectTable.slug, baseSlug),
-  })
-
-  if (!existing) return baseSlug
-  const randomSuffix = Math.floor(Math.random() * 10000)
-  return `${baseSlug}-${randomSuffix}`
 }
 
 async function getRandomUserId(): Promise<string | null> {
