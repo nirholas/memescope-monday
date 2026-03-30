@@ -5,6 +5,8 @@
 
 import crypto from "crypto"
 
+import { enrichCoinData } from "@/lib/coin-data"
+
 const TWEET_URL = "https://api.x.com/2/tweets"
 
 interface PostTweetResult {
@@ -121,6 +123,8 @@ function formatCompact(value: number, prefix = "$"): string {
 
 /**
  * Post a notification tweet when a new coin is submitted.
+ * When a contractAddress is provided, live market data is fetched from
+ * DexScreener / PumpFun / Helius / CoinGecko before composing the tweet.
  */
 export async function notifyXNewCoin({
   name,
@@ -128,25 +132,39 @@ export async function notifyXNewCoin({
   chain,
   slug,
   twitterUrl,
-  marketCap,
-  volume24h,
-  holders,
+  contractAddress,
 }: {
   name: string
   ticker?: string | null
   chain?: string | null
   slug: string
   twitterUrl?: string | null
-  marketCap?: number | null
-  volume24h?: number | null
-  holders?: number | null
+  contractAddress?: string | null
 }): Promise<PostTweetResult> {
   const baseUrl = process.env.NEXT_PUBLIC_URL || "https://memescope-monday.com"
   const url = `${baseUrl}/projects/${slug}`
 
+  // Fetch live market data when we have a contract address
+  let marketCap: number | undefined
+  let volume24h: number | undefined
+  let holders: number | undefined
+  let enrichedTwitterUrl = twitterUrl
+
+  if (contractAddress) {
+    try {
+      const enriched = await enrichCoinData(contractAddress, chain ?? "solana")
+      marketCap = enriched.marketCap
+      volume24h = enriched.volume24h
+      holders = enriched.holders
+      if (!enrichedTwitterUrl && enriched.twitterUrl) enrichedTwitterUrl = enriched.twitterUrl
+    } catch (err) {
+      console.warn("[X Notification] Enrichment failed, posting without market data:", err)
+    }
+  }
+
   const tickerPart = ticker ? ` $${ticker}` : ""
   const chainPart = chain ? ` on ${chain.charAt(0).toUpperCase() + chain.slice(1)}` : ""
-  const handle = parseTwitterHandle(twitterUrl)
+  const handle = parseTwitterHandle(enrichedTwitterUrl)
   const handlePart = handle ? ` by ${handle}` : ""
 
   // Build optional market stats lines

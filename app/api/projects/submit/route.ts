@@ -273,6 +273,7 @@ export async function POST(request: NextRequest) {
       chain: data.chain,
       slug: newProject.slug,
       twitterUrl: data.twitterUrl,
+      contractAddress: data.contractAddress,
     }).catch((err: unknown) => console.error("[X Notification] Failed:", err))
 
     // 11. Return success
