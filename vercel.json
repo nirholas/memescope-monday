@@ -1,0 +1,25 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "path": "/api/cron/auto-list-migrations",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/enrich-coins",
+      "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/cron/update-launches",
+      "schedule": "0 10 * * 1"
+    },
+    {
+      "path": "/api/cron/send-ongoing-reminders",
+      "schedule": "0 9 * * 1"
+    },
+    {
+      "path": "/api/cron/send-winner-notifications",
+      "schedule": "0 11 * * 1"
+    }
+  ]
+}

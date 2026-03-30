@@ -142,17 +142,6 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
     }
   }
 
-  const checkWebsiteUrl = async (url: string) => {
-    try {
-      const response = await fetch(`/api/projects/check-url?url=${encodeURIComponent(url)}`)
-      const data = await response.json()
-      return data.exists
-    } catch (error) {
-      console.error("Error checking website URL:", error)
-      return false
-    }
-  }
-
   useEffect(() => {
     fetchCategories()
   }, [])
@@ -222,14 +211,6 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
     setIsPending(true)
     setError(null)
 
-    if (formData.websiteUrl) {
-      const urlExists = await checkWebsiteUrl(formData.websiteUrl)
-      if (urlExists) {
-        setError("This website URL has already been submitted. Please use a different URL.")
-        setIsPending(false)
-        return
-      }
-    }
 
     if (formData.categories.length > 3) {
       setError("You can select a maximum of 3 categories.")
