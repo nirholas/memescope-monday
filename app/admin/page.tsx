@@ -156,7 +156,11 @@ export default function AdminDashboard() {
       setFreeLaunchAvailability(freeLaunchData.firstAvailableDate)
       setSubmissions(recentSubmissions)
       setSponsorships(sponsorshipsData)
-    } catch {
+    } catch (error) {
+      console.error("Failed to fetch admin data:", error)
+      toast.error(
+        error instanceof Error ? error.message : "Failed to load admin data. Check console for details.",
+      )
       setUsers([])
       setFilteredUsers([])
       setStats({
@@ -184,6 +188,7 @@ export default function AdminDashboard() {
       setTotalCategories(totalCount)
     } catch (error) {
       console.error("Failed to fetch categories:", error)
+      toast.error("Failed to load categories")
     }
   }
 

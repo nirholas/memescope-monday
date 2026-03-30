@@ -1,0 +1,10 @@
+{
+  "servers": {
+    "memescope-monday": {
+      "type": "stdio",
+      "command": "bun",
+      "args": ["run", "mcp/server.ts"],
+      "env": {}
+    }
+  }
+}

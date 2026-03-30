@@ -12,7 +12,8 @@
     "dev": "next dev --turbopack",
     "lint": "next lint",
     "start": "next start",
-    "update-launches": "bash ./scripts/update-launches.sh"
+    "update-launches": "bash ./scripts/update-launches.sh",
+    "mcp": "bun run mcp/server.ts"
   },
   "prettier": {
     "importOrder": [
@@ -50,6 +51,7 @@
     "@marsidev/react-turnstile": "^1.1.0",
     "@mdx-js/loader": "^3.1.0",
     "@mdx-js/react": "^3.1.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@next/mdx": "^15.3.3",
     "@radix-ui/react-accordion": "^1.2.10",
     "@radix-ui/react-alert-dialog": "^1.1.13",
@@ -150,5 +152,3 @@
     "typescript": "^5.8.3"
   }
 }
-
-
