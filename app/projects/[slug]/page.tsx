@@ -134,10 +134,10 @@ export async function generateMetadata(
 
   return {
     title: `${projectData.name} | Memescope Monday`,
-    description: stripHtml(projectData.description),
+    description: stripHtml(projectData.description ?? ""),
     openGraph: {
       title: `${projectData.name} on Memescope Monday`,
-      description: stripHtml(projectData.description),
+      description: stripHtml(projectData.description ?? ""),
       images: [
         projectData.productImage || projectData.coverImageUrl || projectData.logoUrl || "",
         ...previousImages,
@@ -146,7 +146,7 @@ export async function generateMetadata(
     twitter: {
       card: "summary_large_image",
       title: `${projectData.name} on Memescope Monday`,
-      description: stripHtml(projectData.description),
+      description: stripHtml(projectData.description ?? ""),
       images: [projectData.productImage || projectData.logoUrl || ""],
     },
   }
@@ -671,7 +671,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               {/* About / Description */}
               <div className="w-full">
                 <h2 className="mb-3 text-lg font-semibold">About</h2>
-                <RichTextDisplay content={projectData.description} />
+                <RichTextDisplay content={projectData.description ?? ""} />
               </div>
 
               {/* Product Image / Banner */}
@@ -708,7 +708,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 <div>
                   <EditButton
                     projectId={projectData.id}
-                    initialDescription={projectData.description}
+                    initialDescription={projectData.description ?? ""}
                     initialCategories={projectData.categories}
                     isOwner={isOwner}
                     isScheduled={isScheduled}
