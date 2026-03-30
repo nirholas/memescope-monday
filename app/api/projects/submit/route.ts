@@ -1,23 +1,19 @@
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
-import { format } from "date-fns"
 
 import { db } from "@/drizzle/db"
 import {
   category as categoryTable,
-  chainType,
-  coinType,
-  pricingType,
+  launchQuota,
+  launchStatus,
   project as projectTable,
   projectToCategory,
 } from "@/drizzle/db/schema"
 import { eq } from "drizzle-orm"
 
-import { DATE_FORMAT, LAUNCH_TYPES } from "@/lib/constants"
+import { LAUNCH_SETTINGS } from "@/lib/constants"
 import { notifyXNewCoin } from "@/lib/x-notification"
 import { checkRateLimit } from "@/lib/rate-limit"
-import { scheduleLaunch } from "@/app/actions/launch"
-import { notifyDiscordLaunch } from "@/app/actions/discord"
 
 // ---------------------------------------------------------------------------
 // Validation
@@ -42,6 +38,10 @@ const submitProjectSchema = z.object({
   categories: z
     .array(z.string())
     .max(3, "Maximum 3 categories")
+    .default([]),
+  techStack: z
+    .array(z.string())
+    .max(5, "Maximum 5 technologies")
     .default([]),
   platforms: z
     .array(z.string())
@@ -213,6 +213,7 @@ export async function POST(request: NextRequest) {
         websiteUrl: normalizedUrl,
         logoUrl: data.logoUrl ?? undefined,
         productImage: data.productImage ?? undefined,
+        techStack: data.techStack.length > 0 ? data.techStack : undefined,
         platforms: data.platforms.length > 0 ? data.platforms : undefined,
         pricing: data.pricing,
         githubUrl: data.githubUrl ?? undefined,
@@ -238,11 +239,46 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 9. Auto-schedule for today (free tier)
+    // 9. Auto-schedule for today (free tier, status = ongoing)
     try {
-      const todayFormatted = format(new Date(), DATE_FORMAT.API)
-      // Use a system user ID for API submissions
-      await scheduleLaunch(newProject.id, todayFormatted, LAUNCH_TYPES.FREE, newProject.id)
+      const now = new Date()
+      const launchDate = new Date(
+        Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), LAUNCH_SETTINGS.LAUNCH_HOUR_UTC, 0, 0, 0),
+      )
+
+      await db
+        .update(projectTable)
+        .set({
+          scheduledLaunchDate: launchDate,
+          launchType: "free",
+          launchStatus: launchStatus.ONGOING,
+          updatedAt: new Date(),
+        })
+        .where(eq(projectTable.id, newProject.id))
+
+      // Update or create daily quota
+      const quotaResult = await db
+        .select()
+        .from(launchQuota)
+        .where(eq(launchQuota.date, launchDate))
+        .limit(1)
+
+      if (quotaResult.length === 0) {
+        await db.insert(launchQuota).values({
+          id: crypto.randomUUID(),
+          date: launchDate,
+          freeCount: 1,
+          premiumCount: 0,
+          premiumPlusCount: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+      } else {
+        await db
+          .update(launchQuota)
+          .set({ freeCount: (quotaResult[0].freeCount ?? 0) + 1, updatedAt: new Date() })
+          .where(eq(launchQuota.id, quotaResult[0].id))
+      }
     } catch (scheduleError) {
       console.error("[API Submit] Auto-schedule failed:", scheduleError)
       // Project was still created — non-blocking
@@ -254,15 +290,7 @@ export async function POST(request: NextRequest) {
       ticker: data.ticker,
       chain: data.chain,
       slug: newProject.slug,
-    }).catch((err) => console.error("[X Notification] Failed:", err))
-
-    notifyDiscordLaunch(
-      data.name,
-      format(new Date(), DATE_FORMAT.DISPLAY),
-      LAUNCH_TYPES.FREE,
-      data.websiteUrl,
-      `${process.env.NEXT_PUBLIC_URL || ""}/projects/${newProject.slug}`,
-    ).catch((err) => console.error("[Discord Notification] Failed:", err))
+    }).catch((err: unknown) => console.error("[X Notification] Failed:", err))
 
     // 11. Return success
     return NextResponse.json(
@@ -320,6 +348,7 @@ export async function GET(request: NextRequest) {
       logoUrl: { type: "string (URL)", required: false },
       productImage: { type: "string (URL)", required: false },
       categories: { type: "string[] (category IDs or names)", required: false, max: 3 },
+      techStack: { type: "string[]", required: false, max: 5 },
       platforms: { type: "string[]", required: false, values: ["web", "mobile", "desktop", "api", "other"] },
       pricing: { type: "string", required: false, default: "free", values: ["free", "freemium", "paid"] },
       chain: { type: "string", required: false, default: "solana", values: ["solana", "base", "bnb", "ethereum"] },
