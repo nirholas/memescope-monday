@@ -249,7 +249,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
         productImage: formData.productImage,
         categories: formData.categories,
         techStack: [],
-        pricing: formData.pricing || null,
+        pricing: formData.pricing || undefined,
         chain: formData.chain,
         coinType: formData.coinType,
         contractAddress: formData.contractAddress || null,
