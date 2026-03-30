@@ -103,7 +103,7 @@ export default async function WinnersPage({
                     <WinnerCard
                       name={winner.name}
                       slug={winner.slug}
-                      description={winner.description}
+                      description={winner.description ?? ""}
                       thumbnail={winner.logoUrl}
                       dailyRanking={winner.dailyRanking || index + 1}
                       upvoteCount={winner.upvoteCount}

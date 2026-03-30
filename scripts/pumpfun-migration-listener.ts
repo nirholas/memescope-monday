@@ -1,13 +1,21 @@
 /**
- * Real-time PumpFun migration listener.
+ * Real-time PumpFun migration listener — catches ALL migrations.
  *
- * Connects to the PumpPortal WebSocket and auto-lists every token that
- * graduates (completes its bonding curve) on PumpFun.
+ * Dual-source approach:
+ * 1. Solana `programSubscribe` — watches for new Pump AMM (PumpSwap) market
+ *    accounts on-chain. This never misses migrations, even when logs are
+ *    truncated or errors occur mid-transaction (see chainstacklabs/pumpfun-bonkfun-bot#87).
+ * 2. PumpPortal WebSocket — lightweight relay that fires quickly for most events.
  *
- * Usage:  bun run migrations:listen
+ * Both feed into the same processing pipeline; the shared `processedMints` set
+ * prevents duplicate work.
+ *
+ * Required env:  HELIUS_API_KEY  (or SOLANA_WSS_ENDPOINT + SOLANA_RPC_ENDPOINT)
+ * Usage:         bun run migrations:listen
  */
 import "dotenv/config"
 
+import { ed25519 } from "@noble/curves/ed25519"
 import { eq, sql } from "drizzle-orm"
 
 import { db } from "../drizzle/db"
@@ -27,27 +35,90 @@ import { notifyXNewCoin } from "../lib/x-notification"
 // Config
 // ---------------------------------------------------------------------------
 
-const WS_URL = "wss://pumpportal.fun/api/data"
+const HELIUS_API_KEY = process.env.HELIUS_API_KEY
+const SOLANA_WSS_ENDPOINT =
+  process.env.SOLANA_WSS_ENDPOINT ||
+  (HELIUS_API_KEY ? `wss://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}` : undefined)
+const SOLANA_RPC_ENDPOINT =
+  process.env.SOLANA_RPC_ENDPOINT ||
+  (HELIUS_API_KEY ? `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}` : undefined)
+
+const PUMPPORTAL_WS_URL = "wss://pumpportal.fun/api/data"
 const LAUNCH_HOUR_UTC = 10
 const MIN_MARKET_CAP = 5_000
 const MAX_CONCURRENT = 3
 const RECONNECT_BASE_MS = 1_000
 const RECONNECT_MAX_MS = 30_000
 
+// Pump AMM (PumpSwap) program
+const PUMP_AMM_PROGRAM_ID = "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+const SOL_MINT = "So11111111111111111111111111111111111111112"
+
+// Market account layout: discriminator(8) + pool_bump(1) + index(2) + 6×pubkey(192) + lp_supply(8)
+const MARKET_ACCOUNT_LENGTH = 8 + 1 + 2 + 32 * 6 + 8 // 203
+const MARKET_DISCRIMINATOR = new Uint8Array([0xf1, 0x9a, 0x6d, 0x04, 0x11, 0xb1, 0x6d, 0xbc])
+
+// ---------------------------------------------------------------------------
+// Base58
+// ---------------------------------------------------------------------------
+
+const BASE58_ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+
+function base58Encode(bytes: Uint8Array): string {
+  if (bytes.length === 0) return ""
+  let zeros = 0
+  for (const b of bytes) {
+    if (b !== 0) break
+    zeros++
+  }
+  let num = 0n
+  for (const b of bytes) num = num * 256n + BigInt(b)
+  const chars: string[] = []
+  while (num > 0n) {
+    chars.unshift(BASE58_ALPHABET[Number(num % 58n)])
+    num /= 58n
+  }
+  return "1".repeat(zeros) + chars.join("")
+}
+
+// ---------------------------------------------------------------------------
+// Ed25519 on-curve check (filters user-created pools from PDA-created ones)
+// ---------------------------------------------------------------------------
+
+function isOnCurve(pubkeyBytes: Uint8Array): boolean {
+  try {
+    ed25519.ExtendedPoint.fromHex(pubkeyBytes)
+    return true
+  } catch {
+    return false
+  }
+}
+
 // ---------------------------------------------------------------------------
 // State
 // ---------------------------------------------------------------------------
 
-/** Mints we've already processed or are currently processing (session-level dedup) */
+/** Mints already processed or in-flight (session-level dedup) */
 const processedMints = new Set<string>()
+/** Known Pump AMM market pubkeys (for programSubscribe dedup) */
+const knownMarkets = new Set<string>()
+
 let activeJobs = 0
-let reconnectAttempts = 0
-let ws: WebSocket | null = null
 let shuttingDown = false
 
+// Per-listener reconnect state
+let programSubReconnects = 0
+let pumpPortalReconnects = 0
+let programSubWs: WebSocket | null = null
+let pumpPortalWs: WebSocket | null = null
+
 // ---------------------------------------------------------------------------
-// Helpers (same as cron route)
+// Helpers
 // ---------------------------------------------------------------------------
+
+function log(msg: string) {
+  console.log(`[${new Date().toISOString()}] ${msg}`)
+}
 
 async function generateUniqueSlug(name: string): Promise<string> {
   const baseSlug = name
@@ -60,7 +131,6 @@ async function generateUniqueSlug(name: string): Promise<string> {
   })
 
   if (!existing) return baseSlug
-
   const randomSuffix = Math.floor(Math.random() * 10000)
   return `${baseSlug}-${randomSuffix}`
 }
@@ -85,39 +155,89 @@ async function isAlreadyListed(contractAddress: string): Promise<boolean> {
 }
 
 // ---------------------------------------------------------------------------
+// Market account parsing
+// ---------------------------------------------------------------------------
+
+interface MarketAccount {
+  poolBump: number
+  index: number
+  creator: string
+  creatorBytes: Uint8Array
+  baseMint: string
+  quoteMint: string
+  lpMint: string
+  poolBaseTokenAccount: string
+  poolQuoteTokenAccount: string
+  lpSupply: bigint
+}
+
+function parseMarketAccount(data: Buffer): MarketAccount | null {
+  if (data.length < MARKET_ACCOUNT_LENGTH) return null
+
+  let offset = 8 // skip discriminator
+  const poolBump = data.readUint8(offset)
+  offset += 1
+  const index = data.readUint16LE(offset)
+  offset += 2
+
+  const creatorBytes = data.subarray(offset, offset + 32)
+  const creator = base58Encode(creatorBytes)
+  offset += 32
+  const baseMint = base58Encode(data.subarray(offset, offset + 32))
+  offset += 32
+  const quoteMint = base58Encode(data.subarray(offset, offset + 32))
+  offset += 32
+  const lpMint = base58Encode(data.subarray(offset, offset + 32))
+  offset += 32
+  const poolBaseTokenAccount = base58Encode(data.subarray(offset, offset + 32))
+  offset += 32
+  const poolQuoteTokenAccount = base58Encode(data.subarray(offset, offset + 32))
+  offset += 32
+  const lpSupply = data.readBigUInt64LE(offset)
+
+  return {
+    poolBump,
+    index,
+    creator,
+    creatorBytes: new Uint8Array(creatorBytes),
+    baseMint,
+    quoteMint,
+    lpMint,
+    poolBaseTokenAccount,
+    poolQuoteTokenAccount,
+    lpSupply,
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Process a single migration event
 // ---------------------------------------------------------------------------
 
-async function processMigration(mint: string) {
+async function processMigration(mint: string, source: string) {
   if (processedMints.has(mint)) return
   processedMints.add(mint)
 
-  // DB-level dedup check
   if (await isAlreadyListed(mint)) {
-    log(`Already listed, skipping: ${mint}`)
+    log(`[${source}] Already listed, skipping: ${mint}`)
     return
   }
 
-  // Fetch full coin data from PumpFun
   const coin = await getPumpFunCoin(mint)
   if (!coin) {
-    log(`Could not fetch coin data for ${mint}, skipping`)
+    log(`[${source}] Not a PumpFun coin or fetch failed: ${mint}`)
     return
   }
 
-  // Skip NSFW / banned
   if (coin.nsfw || coin.is_banned) {
-    log(`NSFW/banned, skipping: ${coin.name} (${mint})`)
+    log(`[${source}] NSFW/banned, skipping: ${coin.name} (${mint})`)
     return
   }
 
-  // Skip very low market cap
   if (coin.usd_market_cap < MIN_MARKET_CAP) {
-    log(`Market cap too low ($${coin.usd_market_cap}), skipping: ${coin.name} (${mint})`)
+    log(`[${source}] Market cap too low ($${coin.usd_market_cap}), skipping: ${coin.name} (${mint})`)
     return
   }
 
-  // Enrich from multiple sources
   const enriched = await enrichCoinData(mint, "solana")
 
   const name = coin.name || enriched.name || coin.symbol
@@ -131,12 +251,10 @@ async function processMigration(mint: string) {
 
   const projectId = crypto.randomUUID()
 
-  // Find Meme category
   const memeCategory = await db.query.category.findFirst({
     where: eq(categoryTable.name, "Meme"),
   })
 
-  // Insert project
   await db.insert(projectTable).values({
     id: projectId,
     name,
@@ -179,7 +297,6 @@ async function processMigration(mint: string) {
     updatedAt: now,
   })
 
-  // Link to Meme category
   if (memeCategory) {
     await db.insert(projectToCategory).values({
       projectId,
@@ -211,7 +328,6 @@ async function processMigration(mint: string) {
       .where(eq(launchQuota.id, quotaResult[0].id))
   }
 
-  // Post to X (non-blocking)
   notifyXNewCoin({
     name,
     ticker: coin.symbol,
@@ -221,13 +337,12 @@ async function processMigration(mint: string) {
     contractAddress: coin.mint,
   }).catch((err) => console.error("[Migration] X notification failed:", err))
 
-  log(`Listed: ${name} ($${coin.symbol}) — ${mint}`)
+  log(`[${source}] Listed: ${name} ($${coin.symbol}) — ${mint}`)
 }
 
-/** Wraps processMigration with concurrency control and error handling */
-async function handleMigration(mint: string) {
+/** Wraps processMigration with concurrency control */
+async function handleMigration(mint: string, source: string) {
   if (activeJobs >= MAX_CONCURRENT) {
-    // Wait for a slot to free up
     await new Promise<void>((resolve) => {
       const interval = setInterval(() => {
         if (activeJobs < MAX_CONCURRENT) {
@@ -240,7 +355,7 @@ async function handleMigration(mint: string) {
 
   activeJobs++
   try {
-    await processMigration(mint)
+    await processMigration(mint, source)
   } catch (err) {
     console.error(`[Migration] Error processing ${mint}:`, err)
   } finally {
@@ -249,69 +364,193 @@ async function handleMigration(mint: string) {
 }
 
 // ---------------------------------------------------------------------------
-// WebSocket connection
+// Solana programSubscribe listener (primary — catches ALL migrations)
 // ---------------------------------------------------------------------------
 
-function connect() {
-  if (shuttingDown) return
+const DISCRIMINATOR_BASE58 = base58Encode(MARKET_DISCRIMINATOR)
 
-  log(`Connecting to ${WS_URL}...`)
-  ws = new WebSocket(WS_URL)
+/**
+ * Fetch all existing Pump AMM market pubkeys so we only process new ones.
+ * Uses dataSlice to avoid downloading full account data.
+ */
+async function fetchExistingMarkets(): Promise<void> {
+  if (!SOLANA_RPC_ENDPOINT) return
 
-  ws.onopen = () => {
-    reconnectAttempts = 0
-    log("Connected. Subscribing to migration events...")
-    ws!.send(JSON.stringify({ method: "subscribeMigration" }))
+  log("[programSubscribe] Fetching existing Pump AMM markets...")
+  try {
+    const res = await fetch(SOLANA_RPC_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "getProgramAccounts",
+        params: [
+          PUMP_AMM_PROGRAM_ID,
+          {
+            encoding: "base64",
+            commitment: "confirmed",
+            dataSlice: { offset: 0, length: 0 },
+            filters: [
+              { dataSize: MARKET_ACCOUNT_LENGTH },
+              { memcmp: { offset: 0, bytes: DISCRIMINATOR_BASE58 } },
+              { memcmp: { offset: 75, bytes: SOL_MINT } },
+            ],
+          },
+        ],
+      }),
+    })
+
+    const data = await res.json()
+    const accounts = data?.result ?? []
+    for (const acc of accounts) {
+      knownMarkets.add(acc.pubkey)
+    }
+    log(`[programSubscribe] Loaded ${knownMarkets.size} existing markets`)
+  } catch (err) {
+    console.error("[programSubscribe] Failed to fetch existing markets:", err)
+  }
+}
+
+function connectProgramSubscribe() {
+  if (shuttingDown || !SOLANA_WSS_ENDPOINT) return
+
+  log(`[programSubscribe] Connecting to Solana RPC WebSocket...`)
+  programSubWs = new WebSocket(SOLANA_WSS_ENDPOINT)
+
+  programSubWs.onopen = () => {
+    programSubReconnects = 0
+    log("[programSubscribe] Connected. Subscribing to Pump AMM program updates...")
+    programSubWs!.send(
+      JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "programSubscribe",
+        params: [
+          PUMP_AMM_PROGRAM_ID,
+          {
+            commitment: "confirmed",
+            encoding: "base64",
+            filters: [
+              { dataSize: MARKET_ACCOUNT_LENGTH },
+              { memcmp: { offset: 0, bytes: DISCRIMINATOR_BASE58 } },
+              { memcmp: { offset: 75, bytes: SOL_MINT } },
+            ],
+          },
+        ],
+      }),
+    )
   }
 
-  ws.onmessage = (event) => {
+  programSubWs.onmessage = (event) => {
     try {
-      const data = JSON.parse(String(event.data))
+      const msg = JSON.parse(String(event.data))
 
-      // Extract mint from the migration event
-      const mint: string | undefined = data.mint ?? data.token ?? data.address
-      if (!mint) {
-        // Could be a subscription confirmation or heartbeat
-        if (data.message || data.status) {
-          log(`Server: ${data.message ?? data.status}`)
-        }
+      // Subscription confirmation
+      if (msg.id === 1 && msg.result !== undefined) {
+        log(`[programSubscribe] Subscription active (id: ${msg.result})`)
         return
       }
 
-      // Fire-and-forget — handleMigration manages its own concurrency
-      handleMigration(mint)
+      if (msg.method !== "programNotification") return
+
+      const value = msg.params?.result?.value
+      if (!value) return
+
+      const pubkey: string = value.pubkey
+      if (knownMarkets.has(pubkey)) return // existing market update (swap, etc.)
+
+      const rawData = value.account?.data?.[0]
+      if (!rawData) return
+
+      const accountData = Buffer.from(rawData, "base64")
+      const market = parseMarketAccount(accountData)
+      if (!market) return
+
+      // Filter user-created pools: migration pools are created by a program (PDA = off-curve)
+      if (isOnCurve(market.creatorBytes)) {
+        return // user-created pool, not a PumpFun migration
+      }
+
+      knownMarkets.add(pubkey)
+      log(
+        `[programSubscribe] New migration detected — mint: ${market.baseMint}, pool: ${pubkey}`,
+      )
+
+      handleMigration(market.baseMint, "programSubscribe")
     } catch {
-      // Ignore non-JSON messages (heartbeats, etc.)
+      // Ignore parse errors on heartbeats etc.
     }
   }
 
-  ws.onerror = (event) => {
-    console.error("[Migration] WebSocket error:", event)
+  programSubWs.onerror = (event) => {
+    console.error("[programSubscribe] WebSocket error:", event)
   }
 
-  ws.onclose = () => {
+  programSubWs.onclose = () => {
     if (shuttingDown) return
-    const delay = Math.min(RECONNECT_BASE_MS * 2 ** reconnectAttempts, RECONNECT_MAX_MS)
-    reconnectAttempts++
-    log(`Disconnected. Reconnecting in ${delay / 1000}s...`)
-    setTimeout(connect, delay)
+    const delay = Math.min(RECONNECT_BASE_MS * 2 ** programSubReconnects, RECONNECT_MAX_MS)
+    programSubReconnects++
+    log(`[programSubscribe] Disconnected. Reconnecting in ${delay / 1000}s...`)
+    setTimeout(connectProgramSubscribe, delay)
   }
 }
 
 // ---------------------------------------------------------------------------
-// Logging & lifecycle
+// PumpPortal listener (secondary — fast relay for most migrations)
 // ---------------------------------------------------------------------------
 
-function log(msg: string) {
-  console.log(`[${new Date().toISOString()}] ${msg}`)
+function connectPumpPortal() {
+  if (shuttingDown) return
+
+  log(`[pumpPortal] Connecting to ${PUMPPORTAL_WS_URL}...`)
+  pumpPortalWs = new WebSocket(PUMPPORTAL_WS_URL)
+
+  pumpPortalWs.onopen = () => {
+    pumpPortalReconnects = 0
+    log("[pumpPortal] Connected. Subscribing to migration events...")
+    pumpPortalWs!.send(JSON.stringify({ method: "subscribeMigration" }))
+  }
+
+  pumpPortalWs.onmessage = (event) => {
+    try {
+      const data = JSON.parse(String(event.data))
+      const mint: string | undefined = data.mint ?? data.token ?? data.address
+      if (!mint) {
+        if (data.message || data.status) {
+          log(`[pumpPortal] Server: ${data.message ?? data.status}`)
+        }
+        return
+      }
+      handleMigration(mint, "pumpPortal")
+    } catch {
+      // Ignore non-JSON messages
+    }
+  }
+
+  pumpPortalWs.onerror = (event) => {
+    console.error("[pumpPortal] WebSocket error:", event)
+  }
+
+  pumpPortalWs.onclose = () => {
+    if (shuttingDown) return
+    const delay = Math.min(RECONNECT_BASE_MS * 2 ** pumpPortalReconnects, RECONNECT_MAX_MS)
+    pumpPortalReconnects++
+    log(`[pumpPortal] Disconnected. Reconnecting in ${delay / 1000}s...`)
+    setTimeout(connectPumpPortal, delay)
+  }
 }
+
+// ---------------------------------------------------------------------------
+// Lifecycle
+// ---------------------------------------------------------------------------
 
 function shutdown() {
   if (shuttingDown) return
   shuttingDown = true
   log("Shutting down...")
-  ws?.close()
-  // Allow in-flight jobs a moment to finish
+  programSubWs?.close()
+  pumpPortalWs?.close()
   setTimeout(() => process.exit(0), 2_000)
 }
 
@@ -322,6 +561,23 @@ process.on("SIGTERM", shutdown)
 // Start
 // ---------------------------------------------------------------------------
 
-log("PumpFun migration listener starting...")
-log(`Min market cap: $${MIN_MARKET_CAP} | Max concurrent: ${MAX_CONCURRENT}`)
-connect()
+async function main() {
+  log("PumpFun migration listener starting...")
+  log(`Min market cap: $${MIN_MARKET_CAP} | Max concurrent: ${MAX_CONCURRENT}`)
+
+  if (SOLANA_WSS_ENDPOINT) {
+    await fetchExistingMarkets()
+    connectProgramSubscribe()
+    log("[programSubscribe] Primary listener active — catches ALL migrations")
+  } else {
+    log("[programSubscribe] Skipped — set HELIUS_API_KEY or SOLANA_WSS_ENDPOINT to enable")
+  }
+
+  connectPumpPortal()
+  log("[pumpPortal] Secondary listener active")
+}
+
+main().catch((err) => {
+  console.error("Fatal error:", err)
+  process.exit(1)
+})
