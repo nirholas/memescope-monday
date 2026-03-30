@@ -57,7 +57,6 @@ export function CryptoCheckoutButton({ tier, priceUsd, projectId }: CryptoChecko
       const { createPaymentHeader } = await import("x402/client")
 
       const paymentHeader = await createPaymentHeader(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- wagmi walletClient is runtime-compatible with x402 Signer
         walletClient as unknown as Parameters<typeof createPaymentHeader>[0],
         requirements.x402Version,
         paymentSpec,

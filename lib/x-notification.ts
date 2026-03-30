@@ -164,17 +164,13 @@ export async function notifyXNewCoin({
 
   const tickerPart = ticker ? ` $${ticker}` : ""
   const chainPart = chain ? ` on ${chain.charAt(0).toUpperCase() + chain.slice(1)}` : ""
-  const handle = parseTwitterHandle(enrichedTwitterUrl)
-  const handlePart = handle ? ` by ${handle}` : ""
-
   // Build optional market stats lines
   const stats: string[] = []
   if (marketCap) stats.push(`Market Cap: ${formatCompact(marketCap)}`)
   if (volume24h) stats.push(`24h Vol: ${formatCompact(volume24h)}`)
-  if (holders) stats.push(`Holders: ${holders.toLocaleString("en-US")}`)
   const statsPart = stats.length > 0 ? `\n${stats.join(" | ")}\n` : ""
 
-  const text = `New coin listed on Memescope Monday:${tickerPart} (${name})${chainPart}${handlePart}\n${statsPart}\nCheck it out: ${url}`
+  const text = `New coin listed on Memescope Monday:${tickerPart} (${name})${chainPart}\n${statsPart}\nCheck it out 👇 ${url}`
 
   return postTweet(text)
 }
