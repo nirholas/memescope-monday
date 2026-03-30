@@ -6,7 +6,7 @@ argument-hint: "Describe the component or UI change..."
 
 You are working on UI components for **Memescope Monday**, a memecoin platform using Next.js 15, React 19, Tailwind CSS 4, and shadcn/ui.
 
-Read [copilot-instructions.md](.github/copilot-instructions.md) for the full project context.
+Refer to the project's copilot-instructions.md for the full project context.
 
 ## Component Patterns
 

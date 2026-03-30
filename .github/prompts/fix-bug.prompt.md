@@ -6,7 +6,7 @@ argument-hint: "Describe the bug or error..."
 
 You are debugging a bug in **Memescope Monday**, a Next.js 15 memecoin platform.
 
-Read [copilot-instructions.md](.github/copilot-instructions.md) for the full project context.
+Refer to the project's copilot-instructions.md for the full project context.
 
 ## Debugging Approach
 
