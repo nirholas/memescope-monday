@@ -6,6 +6,7 @@ import { Toaster } from "sonner"
 
 import Footer from "@/components/layout/footer"
 import Nav from "@/components/layout/nav"
+import { Web3Provider } from "@/components/providers/web3-provider"
 import { ThemeProvider } from "@/components/theme/theme-provider"
 
 import "./globals.css"
@@ -80,11 +81,13 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="flex min-h-dvh flex-col">
-            <Nav />
-            <main className="flex-grow">{children}</main>
-            <Footer />
-          </div>
+          <Web3Provider>
+            <div className="flex min-h-dvh flex-col">
+              <Nav />
+              <main className="flex-grow">{children}</main>
+              <Footer />
+            </div>
+          </Web3Provider>
         </ThemeProvider>
         <Toaster />
       </body>
