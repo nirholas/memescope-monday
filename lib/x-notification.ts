@@ -95,6 +95,31 @@ export async function postTweet(text: string): Promise<PostTweetResult> {
 }
 
 /**
+ * Extract an @handle from a Twitter/X profile URL.
+ * Returns null if the URL can't be parsed.
+ */
+function parseTwitterHandle(twitterUrl: string | null | undefined): string | null {
+  if (!twitterUrl) return null
+  try {
+    const { pathname } = new URL(twitterUrl)
+    const handle = pathname.split("/").filter(Boolean)[0]
+    return handle ? `@${handle}` : null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Format a number into a compact human-readable string (e.g. 4200000 → "$4.2M").
+ */
+function formatCompact(value: number, prefix = "$"): string {
+  if (value >= 1_000_000_000) return `${prefix}${(value / 1_000_000_000).toFixed(1)}B`
+  if (value >= 1_000_000) return `${prefix}${(value / 1_000_000).toFixed(1)}M`
+  if (value >= 1_000) return `${prefix}${(value / 1_000).toFixed(1)}K`
+  return `${prefix}${value.toFixed(0)}`
+}
+
+/**
  * Post a notification tweet when a new coin is submitted.
  */
 export async function notifyXNewCoin({
@@ -102,19 +127,36 @@ export async function notifyXNewCoin({
   ticker,
   chain,
   slug,
+  twitterUrl,
+  marketCap,
+  volume24h,
+  holders,
 }: {
   name: string
   ticker?: string | null
   chain?: string | null
   slug: string
+  twitterUrl?: string | null
+  marketCap?: number | null
+  volume24h?: number | null
+  holders?: number | null
 }): Promise<PostTweetResult> {
   const baseUrl = process.env.NEXT_PUBLIC_URL || "https://memescope-monday.com"
   const url = `${baseUrl}/projects/${slug}`
 
   const tickerPart = ticker ? ` $${ticker}` : ""
   const chainPart = chain ? ` on ${chain.charAt(0).toUpperCase() + chain.slice(1)}` : ""
+  const handle = parseTwitterHandle(twitterUrl)
+  const handlePart = handle ? ` by ${handle}` : ""
 
-  const text = `New coin listed on Memescope Monday:${tickerPart} (${name})${chainPart}\n\nCheck it out: ${url}`
+  // Build optional market stats lines
+  const stats: string[] = []
+  if (marketCap) stats.push(`Market Cap: ${formatCompact(marketCap)}`)
+  if (volume24h) stats.push(`24h Vol: ${formatCompact(volume24h)}`)
+  if (holders) stats.push(`Holders: ${holders.toLocaleString("en-US")}`)
+  const statsPart = stats.length > 0 ? `\n${stats.join(" | ")}\n` : ""
+
+  const text = `New coin listed on Memescope Monday:${tickerPart} (${name})${chainPart}${handlePart}\n${statsPart}\nCheck it out: ${url}`
 
   return postTweet(text)
 }

@@ -64,6 +64,13 @@
       "when": 1774712245228,
       "tag": "0008_remove-logo-requirement",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1774893888007,
+      "tag": "0009_military_wildside",
+      "breakpoints": true
     }
   ]
 }

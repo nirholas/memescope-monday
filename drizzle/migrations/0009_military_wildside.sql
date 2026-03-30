@@ -1,0 +1,1 @@
+ALTER TABLE "project" ADD COLUMN "auto_listed" boolean DEFAULT false;

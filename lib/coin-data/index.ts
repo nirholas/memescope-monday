@@ -1,5 +1,5 @@
 export { enrichCoinData, formatMarketCap, formatPrice, formatPercentChange } from "./enrichment"
-export { getPumpFunCoin, searchPumpFunCoins } from "./pumpfun"
+export { getPumpFunCoin, getPumpFunGraduatedCoins, searchPumpFunCoins } from "./pumpfun"
 export {
   getDexScreenerTopPair,
   getDexScreenerPairs,

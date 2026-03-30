@@ -36,9 +36,17 @@ export async function getProjectBySlug(slug: string) {
     return null
   }
 
-  // Get creator information if available
+  // Get creator information — for auto-listed coins, show a random user each time
   let creator = null
-  if (projectData.createdBy) {
+  if (projectData.autoListed) {
+    const [randomUser] = await db
+      .select()
+      .from(user)
+      .where(eq(user.banned, false))
+      .orderBy(sql`RANDOM()`)
+      .limit(1)
+    creator = randomUser ?? null
+  } else if (projectData.createdBy) {
     const [creatorData] = await db
       .select()
       .from(user)

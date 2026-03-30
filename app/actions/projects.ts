@@ -294,6 +294,7 @@ export async function submitProject(projectData: ProjectSubmissionData) {
       ticker,
       chain,
       slug: newProject.slug,
+      twitterUrl,
     }).catch((err) => console.error("[X Notification] Failed:", err))
 
     return { success: true, projectId: newProject.id, slug: newProject.slug }

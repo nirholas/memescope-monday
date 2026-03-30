@@ -171,6 +171,7 @@ export const project = pgTable(
     trending: boolean("trending").default(false),
     paidExpedited: boolean("paid_expedited").default(false),
     paidTrending: boolean("paid_trending").default(false),
+    autoListed: boolean("auto_listed").default(false),
     weekLabel: text("week_label"),
   },
   (table) => {
