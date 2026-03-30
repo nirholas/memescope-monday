@@ -13,6 +13,7 @@
     "lint": "next lint",
     "start": "next start",
     "update-launches": "bash ./scripts/update-launches.sh",
+    "migrations:listen": "bun run scripts/pumpfun-migration-listener.ts",
     "mcp": "bun run mcp/server.ts"
   },
   "prettier": {
