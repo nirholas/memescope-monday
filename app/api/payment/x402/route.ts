@@ -134,9 +134,8 @@ export async function POST(request: Request) {
 
 async function processProjectPurchase({
   projectId,
-  tier: _tier,
-  userId: _userId,
   txHash,
+  ..._ // tier, userId unused but passed by caller
 }: {
   projectId: string
   tier: string
@@ -221,8 +220,8 @@ async function processSponsorPurchase({
   sponsorName,
   sponsorWebsite,
   sponsorDescription,
-  userId: _userId,
   txHash,
+  ..._ // userId unused but passed by caller
 }: {
   tier: string
   sponsorName: string
