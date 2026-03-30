@@ -2,6 +2,7 @@ import { headers } from "next/headers"
 import Link from "next/link"
 
 import {
+  RiCodeLine,
   RiDashboardLine,
   RiFlashlightLine,
   RiHandCoinLine,
@@ -167,6 +168,15 @@ export default async function Nav() {
                           >
                             <RiHandCoinLine className="text-muted-foreground h-4 w-4" />
                             <span>Sponsors</span>
+                          </Link>
+                        </SheetClose>
+                        <SheetClose asChild>
+                          <Link
+                            href="/developers"
+                            className="hover:bg-muted/50 flex items-center gap-3 px-6 py-2.5 text-sm transition-colors"
+                          >
+                            <RiCodeLine className="text-muted-foreground h-4 w-4" />
+                            <span>Developers</span>
                           </Link>
                         </SheetClose>
                         <SheetClose asChild>

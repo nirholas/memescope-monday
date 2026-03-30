@@ -92,6 +92,14 @@ export function NavMenu() {
             </Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
+
+        <NavigationMenuItem>
+          <NavigationMenuLink asChild>
+            <Link href="/developers" className={`${navigationMenuTriggerStyle()} h-9 px-3 text-sm font-medium`}>
+              Developers
+            </Link>
+          </NavigationMenuLink>
+        </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>
   )
