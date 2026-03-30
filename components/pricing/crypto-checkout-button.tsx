@@ -52,18 +52,26 @@ export function CryptoCheckoutButton({ tier, priceUsd, projectId }: CryptoChecko
 
       setStatus("Awaiting wallet signature...")
 
-      // Step 2: Use x402 client to create payment
+      // Step 2: Use x402 client to create payment header
       // Dynamic import to keep bundle size smaller on non-payment pages
-      const { wrapFetchWithPayment } = await import("@x402/client")
+      const { createPaymentHeader } = await import("x402/client")
 
-      const x402Fetch = wrapFetchWithPayment(fetch, walletClient)
+      const paymentHeader = await createPaymentHeader(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- wagmi walletClient is runtime-compatible with x402 Signer
+        walletClient as unknown as Parameters<typeof createPaymentHeader>[0],
+        requirements.x402Version,
+        paymentSpec,
+      )
 
       setStatus("Processing payment on Base...")
 
-      // Step 3: Retry the request with payment — x402 client handles 402 flow
-      const paymentRes = await x402Fetch("/api/payment/x402", {
+      // Step 3: Retry the request with payment header
+      const paymentRes = await fetch("/api/payment/x402", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-PAYMENT": paymentHeader,
+        },
         body: JSON.stringify({ tier, projectId }),
       })
 
