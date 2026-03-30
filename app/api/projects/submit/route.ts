@@ -30,9 +30,9 @@ const submitProjectSchema = z.object({
     .max(20, "Ticker must be 20 characters or less"),
   description: z
     .string()
-    .min(1, "Description is required")
-    .max(5000, "Description must be 5000 characters or less"),
-  websiteUrl: z.string().url("Must be a valid URL"),
+    .max(5000, "Description must be 5000 characters or less")
+    .nullish(),
+  websiteUrl: z.string().url("Must be a valid URL").nullish(),
   logoUrl: z.string().url().nullish(),
   productImage: z.string().url().nullish(),
   categories: z
@@ -48,6 +48,7 @@ const submitProjectSchema = z.object({
     .default([]),
   pricing: z
     .enum(["free", "freemium", "paid"])
+    .nullish()
     .default("free"),
   chain: z
     .enum(["solana", "base", "bnb", "ethereum"])

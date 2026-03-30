@@ -43,11 +43,11 @@ import { getAllCategories, submitProject } from "@/app/actions/projects"
 interface ProjectFormData {
   name: string
   ticker: string
-  websiteUrl: string
-  description: string
+  websiteUrl?: string
+  description?: string
   categories: string[]
   techStack: string[]
-  pricing: string
+  pricing?: string
   chain: string
   coinType: string
   contractAddress: string
@@ -173,29 +173,21 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
   const nextStep = () => {
     setError(null)
     if (currentStep === 1) {
-      if (
-        !formData.name ||
-        !formData.ticker ||
-        !formData.websiteUrl ||
-        !formData.description
-      ) {
+      if (!formData.name || !formData.ticker) {
         setError("Please fill in all required project information.")
         return
       }
-      try {
-        new URL(formData.websiteUrl)
-      } catch {
-        setError("Please enter a valid website URL.")
-        return
+      if (formData.websiteUrl) {
+        try {
+          new URL(formData.websiteUrl)
+        } catch {
+          setError("Please enter a valid website URL.")
+          return
+        }
       }
     }
 
     if (currentStep === 2) {
-      if (!formData.pricing) {
-        setError("Please select a pricing model.")
-        return
-      }
-
       if (formData.categories.length > 3) {
         setError("You can select a maximum of 3 categories.")
         return
@@ -218,13 +210,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
   }
 
   const handleFinalSubmit = async () => {
-    if (
-      !formData.name ||
-      !formData.ticker ||
-      !formData.websiteUrl ||
-      !formData.description ||
-      !formData.pricing
-    ) {
+    if (!formData.name || !formData.ticker) {
       setError(
         "Some required information is missing. Please go back and complete all fields.",
       )
@@ -232,11 +218,13 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
       return
     }
 
-    const urlExists = await checkWebsiteUrl(formData.websiteUrl)
-    if (urlExists) {
-      setError("This website URL has already been submitted. Please use a different URL.")
-      setIsPending(false)
-      return
+    if (formData.websiteUrl) {
+      const urlExists = await checkWebsiteUrl(formData.websiteUrl)
+      if (urlExists) {
+        setError("This website URL has already been submitted. Please use a different URL.")
+        setIsPending(false)
+        return
+      }
     }
 
     setIsPending(true)

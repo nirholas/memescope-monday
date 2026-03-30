@@ -97,21 +97,6 @@ export async function postTweet(text: string): Promise<PostTweetResult> {
 }
 
 /**
- * Extract an @handle from a Twitter/X profile URL.
- * Returns null if the URL can't be parsed.
- */
-function parseTwitterHandle(twitterUrl: string | null | undefined): string | null {
-  if (!twitterUrl) return null
-  try {
-    const { pathname } = new URL(twitterUrl)
-    const handle = pathname.split("/").filter(Boolean)[0]
-    return handle ? `@${handle}` : null
-  } catch {
-    return null
-  }
-}
-
-/**
  * Format a number into a compact human-readable string (e.g. 4200000 → "$4.2M").
  */
 function formatCompact(value: number, prefix = "$"): string {
@@ -147,7 +132,6 @@ export async function notifyXNewCoin({
   // Fetch live market data when we have a contract address
   let marketCap: number | undefined
   let volume24h: number | undefined
-  let holders: number | undefined
   let enrichedTwitterUrl = twitterUrl
 
   if (contractAddress) {
@@ -155,7 +139,6 @@ export async function notifyXNewCoin({
       const enriched = await enrichCoinData(contractAddress, chain ?? "solana")
       marketCap = enriched.marketCap
       volume24h = enriched.volume24h
-      holders = enriched.holders
       if (!enrichedTwitterUrl && enriched.twitterUrl) enrichedTwitterUrl = enriched.twitterUrl
     } catch (err) {
       console.warn("[X Notification] Enrichment failed, posting without market data:", err)

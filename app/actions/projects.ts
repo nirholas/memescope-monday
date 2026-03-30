@@ -193,8 +193,8 @@ export async function toggleUpvote(projectId: string) {
 // Définir l'interface ici
 interface ProjectSubmissionData {
   name: string
-  description: string
-  websiteUrl: string
+  description?: string | null
+  websiteUrl?: string | null
   logoUrl: string | null
   productImage: string | null
   categories: string[]
@@ -242,7 +242,7 @@ export async function submitProject(projectData: ProjectSubmissionData) {
     } = projectData
 
     // Validation
-    if (!name || !description || !websiteUrl) {
+    if (!name) {
       return { success: false, error: "Missing required fields" }
     }
 
@@ -257,8 +257,8 @@ export async function submitProject(projectData: ProjectSubmissionData) {
         // Utiliser les variables déstructurées de projectData
         name,
         slug,
-        description,
-        websiteUrl,
+        description: description ?? undefined,
+        websiteUrl: websiteUrl ?? undefined,
         logoUrl,
         productImage: productImage ?? undefined,
         techStack,

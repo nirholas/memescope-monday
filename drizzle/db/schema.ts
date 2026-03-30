@@ -127,15 +127,15 @@ export const project = pgTable(
     id: text("id").primaryKey(),
     name: text("name").notNull(),
     slug: text("slug").notNull().unique(),
-    description: text("description").notNull(),
-    websiteUrl: text("website_url").notNull(),
+    description: text("description"),
+    websiteUrl: text("website_url"),
     logoUrl: text("logo_url"),
     coverImageUrl: text("cover_image_url"),
     productImage: text("product_image"),
     githubUrl: text("github_url"),
     twitterUrl: text("twitter_url"),
     techStack: text("tech_stack").array(), // Array des technologies
-    pricing: text("pricing").notNull().default(pricingType.FREE),
+    pricing: text("pricing").default(pricingType.FREE),
     platforms: text("platforms").array(), // Array des plateformes supportées
     launchStatus: text("launch_status").notNull().default(launchStatus.SCHEDULED),
     scheduledLaunchDate: timestamp("scheduled_launch_date"),
