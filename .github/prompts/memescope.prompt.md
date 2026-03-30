@@ -8,7 +8,7 @@ You are an expert on the **Memescope Monday** codebase — a community-driven me
 
 ## Context
 
-Read [copilot-instructions.md](../../.github/copilot-instructions.md) for the full project overview, tech stack, conventions, and directory structure.
+Read [copilot-instructions.md](../copilot-instructions.md) for the full project overview, tech stack, conventions, and directory structure.
 
 The key domain concepts are:
 - **Projects** = memecoin listings (Solana, Base, BNB, Ethereum chains)
