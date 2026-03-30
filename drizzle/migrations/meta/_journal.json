@@ -71,6 +71,13 @@
       "when": 1774893888007,
       "tag": "0009_military_wildside",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1774901701022,
+      "tag": "0010_fearless_pepper_potts",
+      "breakpoints": true
     }
   ]
 }
