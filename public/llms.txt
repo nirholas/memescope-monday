@@ -1,0 +1,41 @@
+# Memescope Monday
+
+> Community-driven memecoin discovery and voting platform.
+> Every Monday at 10 AM UTC, users vote on the best memecoin picks across Solana, Base, BNB Chain, and Ethereum.
+
+## Links
+
+- Homepage: https://memescopemonday.com
+- Repository: https://github.com/nirholas/memescope-monday
+- Full context: https://memescopemonday.com/llms-full.txt
+
+## What Users Can Do
+
+- Submit memecoin picks by contract address or PumpFun/DexScreener URL
+- Upvote the best plays (rate-limited: 100/5min, 2s cooldown)
+- Browse today's picks, yesterday's winners, monthly leaderboards, trending coins
+- Filter by chain (Solana, Base, BNB, Ethereum) and category (Meme, Dog, Cat, AI, Gaming, DeFi, Culture, Celebrity, Political, Other)
+- Earn leaderboard rankings and winner badges
+
+## Key Pages
+
+- `/` — Homepage with countdown, leaderboards, today's picks
+- `/trending` — Browse all submitted coins
+- `/winners` — Past weekly winners
+- `/categories` — Browse by memecoin category
+- `/projects/[slug]` — Individual coin detail with live market data, charts, safety score
+- `/projects/submit` — Submit a new memecoin
+- `/blog` — Articles
+- `/pricing` — Paid feature tiers (Expedited $19, Trending $49, Bundle $59)
+
+## Tech Stack
+
+Next.js 15, React 19, TypeScript, Tailwind CSS, PostgreSQL + Drizzle ORM, Better Auth, Stripe, Redis, Resend, UploadThing
+
+## API
+
+REST endpoints at `/api/*`. Coin data enriched from PumpFun, DexScreener, CoinGecko, CoinMarketCap, CryptoPanic, Helius, Etherscan, and Birdeye.
+
+## MCP Server
+
+Model Context Protocol server with 14 tools for AI agent integration. Run with `bun run mcp`. Tools include: list_projects, get_project, search_projects, lookup_token, get_coin_detail, get_trending_tokens, get_platform_stats, get_leaderboard, and more.

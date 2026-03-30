@@ -134,13 +134,13 @@ export async function POST(request: Request) {
 
 async function processProjectPurchase({
   projectId,
-  tier,
-  userId,
+  _tier,
+  _userId,
   txHash,
 }: {
   projectId: string
-  tier: string
-  userId: string
+  _tier: string
+  _userId: string
   txHash?: string
 }) {
   const [projectData] = await db
@@ -221,14 +221,14 @@ async function processSponsorPurchase({
   sponsorName,
   sponsorWebsite,
   sponsorDescription,
-  userId,
+  _userId,
   txHash,
 }: {
   tier: string
   sponsorName: string
   sponsorWebsite: string
   sponsorDescription?: string
-  userId: string
+  _userId: string
   txHash?: string
 }) {
   const now = new Date()

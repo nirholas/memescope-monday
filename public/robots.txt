@@ -1,0 +1,41 @@
+# https://memescopemonday.com/robots.txt
+
+User-agent: *
+Allow: /
+Allow: /trending
+Allow: /winners
+Allow: /categories
+Allow: /projects/
+Allow: /blog
+Allow: /pricing
+Allow: /reviews
+Allow: /developers
+Allow: /legal
+Disallow: /api/
+Disallow: /dashboard
+Disallow: /settings
+Disallow: /admin
+Disallow: /payment/
+
+# AI / LLM agents
+User-agent: GPTBot
+Allow: /
+Allow: /llms.txt
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+# Sitemaps
+Sitemap: https://memescopemonday.com/sitemap.xml
