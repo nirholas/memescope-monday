@@ -322,10 +322,15 @@ export async function scheduleLaunch(
       }
     }
 
-    // Revalider les chemins
-    revalidatePath("/")
-    revalidatePath("/dashboard")
-    revalidatePath(`/projects/${projectSlug}`)
+    // Revalider les chemins — wrap in try/catch so revalidation errors
+    // don't fail the entire server action after a successful DB update
+    try {
+      revalidatePath("/")
+      revalidatePath("/dashboard")
+      revalidatePath(`/projects/${projectSlug}`)
+    } catch (revalidateError) {
+      console.error("Error revalidating paths after launch schedule:", revalidateError)
+    }
 
     return true
   } catch (error) {

@@ -210,13 +210,17 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
   }
 
   const handleFinalSubmit = async () => {
+    if (isPending) return
+
     if (!formData.name || !formData.ticker) {
       setError(
         "Some required information is missing. Please go back and complete all fields.",
       )
-      setIsPending(false)
       return
     }
+
+    setIsPending(true)
+    setError(null)
 
     if (formData.websiteUrl) {
       const urlExists = await checkWebsiteUrl(formData.websiteUrl)
@@ -226,9 +230,6 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
         return
       }
     }
-
-    setIsPending(true)
-    setError(null)
 
     if (formData.categories.length > 3) {
       setError("You can select a maximum of 3 categories.")
