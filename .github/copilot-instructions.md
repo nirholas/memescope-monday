@@ -49,6 +49,66 @@ Memescope Monday is a community-driven memecoin discovery and voting platform. E
 - Auth checks use `auth.api.getSession()` from `lib/auth.ts`
 - Environment variables are in `.env` (see `.env.example` for reference)
 - Run `bun install` to install dependencies, `bun run dev` to start dev server
+- **Always kill any terminal processes you started** (dev servers, builds, watchers, etc.) before finishing a task. Do not leave terminals running in the background.
+
+## Patterns to Follow
+
+### Server Action Pattern
+```ts
+"use server"
+import { auth } from "@/lib/auth"
+import { db } from "@/drizzle/db"
+import { project } from "@/drizzle/db/schema"
+import { headers } from "next/headers"
+import { eq } from "drizzle-orm"
+
+async function getSession() {
+  return auth.api.getSession({ headers: await headers() })
+}
+
+export async function myAction() {
+  const session = await getSession()
+  if (!session?.user?.id) return { error: "Not authenticated" }
+  // ... Drizzle query ...
+  revalidatePath("/relevant-path")
+}
+```
+
+### Database Queries (Drizzle ORM)
+```ts
+import { db } from "@/drizzle/db"
+import { project } from "@/drizzle/db/schema"
+import { eq, desc, and, count } from "drizzle-orm"
+
+// Select with filter
+await db.select().from(project).where(eq(project.chain, "solana"))
+
+// Relational query
+await db.query.project.findFirst({ where: eq(project.slug, slug) })
+```
+
+### Auth Checks
+- Server-side: `auth.api.getSession({ headers: await headers() })`
+- Client-side: `useSession()` from `@/lib/auth-client`
+
+## Gotchas
+
+- **Package manager is Bun** — not npm or yarn
+- **Import alias**: use `@/` for all imports (maps to project root)
+- **Enums are TS const objects**, not Drizzle `pgEnum` — filter with string literals like `eq(project.chain, "solana")`
+- **`project` table has 100+ columns** — always check `drizzle/db/schema.ts` before adding fields
+- **`weekLabel`** on projects is a string like `"2025-W13"` for Monday voting week grouping
+- **Some comments are in French** — this is from the original author, it's expected
+- **Prettier**: 100 char print width, sorted imports, Tailwind class sorting
+- **`components/ui/`** contains shadcn/ui base components — don't modify these directly
+
+## Important Constants (`lib/constants.ts`)
+
+- Daily launch limits: FREE=10, PREMIUM=20, TOTAL=30
+- User limit: 3 launches/day
+- Categories: Meme, Dog, Cat, AI, Gaming, DeFi, Culture, Celebrity, Political, Other
+- Chains: Solana, Base, BNB, Ethereum
+- Paid features: expedited=$19, trending=$49, bundle=$59
 
 ## Common Commands
 

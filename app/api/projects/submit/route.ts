@@ -192,7 +192,7 @@ export async function POST(request: NextRequest) {
         name: data.name,
         slug,
         description: data.description,
-        websiteUrl: normalizedUrl,
+        websiteUrl: data.websiteUrl,
         logoUrl: data.logoUrl ?? undefined,
         productImage: data.productImage ?? undefined,
         techStack: data.techStack.length > 0 ? data.techStack : undefined,

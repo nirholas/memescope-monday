@@ -8,9 +8,7 @@ import { addDays, format } from "date-fns"
 import { and, desc, eq, gte, sql } from "drizzle-orm"
 
 import { auth } from "@/lib/auth"
-import { DATE_FORMAT, LAUNCH_SETTINGS } from "@/lib/constants"
-
-import { getLaunchAvailabilityRange } from "./launch"
+import { DATE_FORMAT, LAUNCH_LIMITS, LAUNCH_SETTINGS } from "@/lib/constants"
 
 // Vérification des droits admin
 async function checkAdminAccess() {
@@ -104,28 +102,48 @@ export async function getAdminStatsAndUsers() {
   }
 }
 
-// Get free launch availability
+// Get free launch availability — optimized single query for admin dashboard
 export async function getFreeLaunchAvailability() {
   await checkAdminAccess()
 
   const today = new Date()
-  const startDate = format(addDays(today, LAUNCH_SETTINGS.MIN_DAYS_AHEAD), DATE_FORMAT.API)
-  const endDate = format(addDays(today, LAUNCH_SETTINGS.MAX_DAYS_AHEAD), DATE_FORMAT.API)
+  const startDate = addDays(today, LAUNCH_SETTINGS.MIN_DAYS_AHEAD)
+  const endDate = addDays(today, LAUNCH_SETTINGS.MAX_DAYS_AHEAD)
 
-  const availability = await getLaunchAvailabilityRange(startDate, endDate, "free")
+  // Count scheduled free launches per day in the date range using a single query
+  const dailyCounts = await db
+    .select({
+      date: sql<string>`to_char(${project.scheduledLaunchDate}, 'YYYY-MM-DD')`,
+      freeCount: sql<number>`count(*)::int`,
+    })
+    .from(project)
+    .where(
+      and(
+        gte(project.scheduledLaunchDate, startDate),
+        sql`${project.scheduledLaunchDate} < ${addDays(endDate, 1)}`,
+        eq(project.launchStatus, "scheduled"),
+        eq(project.launchType, "free"),
+      ),
+    )
+    .groupBy(sql`to_char(${project.scheduledLaunchDate}, 'YYYY-MM-DD')`)
 
-  // Find the first available date
-  const firstAvailableDate = availability.find((date) => date.freeSlots > 0)
+  const countMap = new Map(dailyCounts.map((d) => [d.date, d.freeCount]))
 
-  return {
-    availability,
-    firstAvailableDate: firstAvailableDate
-      ? {
-          date: firstAvailableDate.date,
-          freeSlots: firstAvailableDate.freeSlots,
-        }
-      : null,
+  // Find the first date in the range with available free slots
+  let current = startDate
+  let firstAvailableDate: { date: string; freeSlots: number } | null = null
+  while (current <= endDate) {
+    const dateStr = format(current, DATE_FORMAT.API)
+    const used = countMap.get(dateStr) || 0
+    const freeSlots = Math.max(0, LAUNCH_LIMITS.FREE_DAILY_LIMIT - used)
+    if (freeSlots > 0) {
+      firstAvailableDate = { date: dateStr, freeSlots }
+      break
+    }
+    current = addDays(current, 1)
   }
+
+  return { firstAvailableDate }
 }
 
 // Get all categories
