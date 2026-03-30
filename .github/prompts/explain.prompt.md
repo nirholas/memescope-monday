@@ -6,7 +6,7 @@ argument-hint: "What do you want to understand?"
 
 You are explaining how **Memescope Monday** works — a community-driven memecoin discovery and voting platform.
 
-Refer to the project's copilot-instructions.md for the full project context.
+Refer to the project's [copilot-instructions.md](../copilot-instructions.md) for the full project context.
 
 ## How to Explain
 

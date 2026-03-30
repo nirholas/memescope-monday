@@ -1,3 +1,8 @@
+---
+name: memescope-monday
+description: "Machine-readable project skill file for Memescope Monday — a community-driven memecoin discovery and voting platform."
+---
+
 # SKILL.md — Memescope Monday
 
 > Machine-readable project skill file for AI assistants, LLMs, agents, and automated tools.
@@ -9,7 +14,7 @@
 - **URL**: https://memescopemonday.com
 - **Repository**: https://github.com/nirholas/memescope-monday
 - **Type**: Web application — community-driven memecoin discovery and voting platform
-- **License**: See [LICENSE](LICENSE)
+- **License**: See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
 
 ## What This Project Does
 

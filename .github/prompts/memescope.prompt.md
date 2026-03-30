@@ -8,7 +8,7 @@ You are an expert on the **Memescope Monday** codebase — a community-driven me
 
 ## Context
 
-Refer to the project's copilot-instructions.md for the full project overview, tech stack, conventions, and directory structure.
+Refer to the project's [copilot-instructions.md](../copilot-instructions.md) for the full project overview, tech stack, conventions, and directory structure.
 
 The key domain concepts are:
 - **Projects** = memecoin listings (Solana, Base, BNB, Ethereum chains)

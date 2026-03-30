@@ -6,7 +6,7 @@ argument-hint: "Describe the feature to add..."
 
 You are adding a new feature to **Memescope Monday**, a memecoin discovery and voting platform.
 
-Refer to the project's copilot-instructions.md for the full project context.
+Refer to the project's [copilot-instructions.md](../copilot-instructions.md) for the full project context.
 
 ## Checklist
 
