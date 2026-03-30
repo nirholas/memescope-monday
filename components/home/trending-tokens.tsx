@@ -236,8 +236,8 @@ export function TrendingTokens({ initialData }: TrendingTokensProps) {
         </div>
       ) : (
         <Tabs defaultValue="dexscreener" className="w-full">
-          <div className="border-b border-gray-200 px-4 dark:border-zinc-800">
-            <TabsList className="h-auto gap-0 bg-transparent p-0">
+          <div className="overflow-x-auto border-b border-gray-200 px-4 dark:border-zinc-800">
+            <TabsList className="h-auto w-full gap-0 bg-transparent p-0">
               {(Object.keys(SOURCE_META) as Array<keyof typeof SOURCE_META>).map((key) => {
                 const meta = SOURCE_META[key]
                 const count = data[key]?.tokens?.length ?? 0

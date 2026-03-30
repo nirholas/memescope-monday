@@ -144,25 +144,7 @@ export async function POST(request: NextRequest) {
   const data = parsed.data
 
   try {
-    // 4. Check for duplicate website URL
-    const normalizedUrl = data.websiteUrl.toLowerCase().replace(/\/$/, "")
-    const [existingProject] = await db
-      .select({ id: projectTable.id, launchStatus: projectTable.launchStatus })
-      .from(projectTable)
-      .where(eq(projectTable.websiteUrl, normalizedUrl))
-
-    if (
-      existingProject &&
-      existingProject.launchStatus !== "payment_pending" &&
-      existingProject.launchStatus !== "payment_failed"
-    ) {
-      return NextResponse.json(
-        { error: "A project with this website URL already exists." },
-        { status: 409 },
-      )
-    }
-
-    // 5. Validate category IDs exist
+    // 4. Validate category IDs exist
     if (data.categories.length > 0) {
       const validCategories = await db
         .select({ id: categoryTable.id })
