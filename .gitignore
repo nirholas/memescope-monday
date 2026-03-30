@@ -48,3 +48,4 @@ next-env.d.ts
 blog-article.ts
 seo-article.ts
 
+.env*.local
