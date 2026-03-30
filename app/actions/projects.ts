@@ -301,7 +301,9 @@ export async function submitProject(projectData: ProjectSubmissionData) {
     return { success: true, projectId: newProject.id, slug: newProject.slug }
   } catch (error) {
     console.error("Error submitting project:", error)
-    return { success: false, error: "Failed to submit project" }
+    const message =
+      error instanceof Error ? error.message : "Failed to submit project"
+    return { success: false, error: message }
   }
 }
 

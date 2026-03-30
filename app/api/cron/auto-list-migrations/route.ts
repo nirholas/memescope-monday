@@ -14,6 +14,7 @@ import { eq, sql } from "drizzle-orm"
 import { LAUNCH_SETTINGS } from "@/lib/constants"
 import { getPumpFunGraduatedCoins } from "@/lib/coin-data/pumpfun"
 import { enrichCoinData } from "@/lib/coin-data/enrichment"
+import { notifyXNewCoin } from "@/lib/x-notification"
 
 const API_KEY = process.env.CRON_API_KEY
 const BATCH_SIZE = 10
@@ -221,6 +222,16 @@ export async function GET(request: NextRequest) {
             })
             .where(eq(launchQuota.id, quotaResult[0].id))
         }
+
+        // Post to X in the background (don't block listing)
+        notifyXNewCoin({
+          name,
+          ticker: coin.symbol,
+          chain: "solana",
+          slug,
+          twitterUrl: coin.twitter || enriched.twitterUrl,
+          contractAddress: coin.mint,
+        }).catch((err) => console.error("[Auto-List] X notification failed:", err))
 
         listed++
         console.log(
