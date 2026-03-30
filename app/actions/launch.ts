@@ -280,11 +280,14 @@ export async function scheduleLaunch(
         updatedAt: new Date(),
       })
       .where(eq(projectTable.id, projectId))
+      .returning({ slug: projectTable.slug })
 
     // Vérifier si la mise à jour a réussi
-    if (!updateResult) {
+    if (!updateResult || updateResult.length === 0) {
       throw new Error("Failed to update project schedule")
     }
+
+    const projectSlug = updateResult[0].slug
 
     // Ne mettre à jour les quotas que pour les lancements gratuits
     // Pour les lancements premium, les quotas seront mis à jour après le paiement
@@ -322,7 +325,7 @@ export async function scheduleLaunch(
     // Revalider les chemins
     revalidatePath("/")
     revalidatePath("/dashboard")
-    revalidatePath(`/projects/${projectId}`)
+    revalidatePath(`/projects/${projectSlug}`)
 
     return true
   } catch (error) {

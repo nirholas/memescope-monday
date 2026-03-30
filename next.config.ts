@@ -94,6 +94,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "metadata.j7tracker.com",
       },
+      {
+        protocol: "https",
+        hostname: "metadata.rapidlaunch.io",
+      },
     ],
   },
   webpack: (config) => {
