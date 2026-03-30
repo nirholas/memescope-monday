@@ -71,12 +71,15 @@ function base58Encode(bytes: Uint8Array): string {
     if (b !== 0) break
     zeros++
   }
-  let num = 0n
-  for (const b of bytes) num = num * 256n + BigInt(b)
+  const ZERO = BigInt(0)
+  const BASE = BigInt(58)
+  const BYTE = BigInt(256)
+  let num = ZERO
+  for (const b of bytes) num = num * BYTE + BigInt(b)
   const chars: string[] = []
-  while (num > 0n) {
-    chars.unshift(BASE58_ALPHABET[Number(num % 58n)])
-    num /= 58n
+  while (num > ZERO) {
+    chars.unshift(BASE58_ALPHABET[Number(num % BASE)])
+    num /= BASE
   }
   return "1".repeat(zeros) + chars.join("")
 }
@@ -514,7 +517,12 @@ function connectPumpPortal() {
 
   pumpPortalWs.onmessage = (event) => {
     try {
-      const data = JSON.parse(String(event.data))
+      const raw = String(event.data)
+      const data = JSON.parse(raw)
+
+      // Debug: log every event so we can see what PumpPortal sends
+      log(`[pumpPortal] Event: ${raw.slice(0, 300)}`)
+
       const mint: string | undefined = data.mint ?? data.token ?? data.address
       if (!mint) {
         if (data.message || data.status) {

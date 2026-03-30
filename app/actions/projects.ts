@@ -200,7 +200,7 @@ interface ProjectSubmissionData {
   categories: string[]
   techStack?: string[]
   platforms?: string[]
-  pricing?: string
+  pricing?: string | null
   githubUrl?: string | null
   twitterUrl?: string | null
   ticker?: string | null
@@ -263,7 +263,7 @@ export async function submitProject(projectData: ProjectSubmissionData) {
         productImage: productImage ?? undefined,
         techStack,
         platforms,
-        pricing,
+        pricing: pricing ?? undefined,
         githubUrl: githubUrl ?? undefined,
         twitterUrl: twitterUrl ?? undefined,
         ticker: ticker ?? undefined,

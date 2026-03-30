@@ -289,7 +289,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
             formData.name,
             format(new Date(), DATE_FORMAT.DISPLAY),
             LAUNCH_TYPES.FREE,
-            formData.websiteUrl,
+            formData.websiteUrl || "",
             `${process.env.NEXT_PUBLIC_URL || ""}/projects/${projectSlug}`,
           )
         } catch (discordError) {
@@ -536,7 +536,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
             </div>
             <div>
               <Label htmlFor="websiteUrl">
-                Website URL <span className="text-red-500">*</span>
+                Website URL <span>(Optional)</span>
               </Label>
               <Input
                 id="websiteUrl"
@@ -550,10 +550,10 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
             </div>
             <div>
               <Label htmlFor="description">
-                Short Description <span className="text-red-500">*</span>
+                Short Description <span>(Optional)</span>
               </Label>
               <RichTextEditor
-                content={formData.description}
+                content={formData.description ?? ""}
                 onChange={(content) => setFormData((prev) => ({ ...prev, description: content }))}
                 placeholder="Describe your project"
                 className="max-h-[300px] overflow-y-auto"
@@ -829,7 +829,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
 
             <div>
               <Label className="mb-2 block">
-                Pricing Model <span className="text-red-500">*</span>
+                Pricing Model <span>(Optional)</span>
               </Label>
               <RadioGroup
                 value={formData.pricing}
@@ -934,7 +934,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
                       <strong>Description:</strong>
                     </p>
                     <RichTextDisplay
-                      content={formData.description}
+                      content={formData.description ?? ""}
                       className="mt-1 max-h-[200px] overflow-y-auto rounded-md border p-2 text-sm"
                     />
                     {uploadedLogoUrl && (
@@ -981,7 +981,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
                     <p>
                       <strong>Pricing:</strong>{" "}
                       <span className="capitalize">
-                        <Badge variant="outline">{getPricingLabel(formData.pricing)}</Badge>
+                        <Badge variant="outline">{getPricingLabel(formData.pricing ?? "free")}</Badge>
                       </span>
                     </p>
                     {formData.githubUrl && (
