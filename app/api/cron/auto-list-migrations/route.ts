@@ -9,15 +9,20 @@ import {
   projectToCategory,
   user as userTable,
 } from "@/drizzle/db/schema"
-import { eq, sql } from "drizzle-orm"
+import { eq, sql, notInArray } from "drizzle-orm"
 
 import { LAUNCH_SETTINGS } from "@/lib/constants"
-import { getPumpFunGraduatedCoins } from "@/lib/coin-data/pumpfun"
+import { getPumpFunCoin, getPumpFunGraduatedCoins } from "@/lib/coin-data/pumpfun"
 import { enrichCoinData } from "@/lib/coin-data/enrichment"
 import { notifyXNewCoin } from "@/lib/x-notification"
 
-const API_KEY = process.env.CRON_API_KEY
-const BATCH_SIZE = 10
+// Vercel cron sends CRON_SECRET; also support legacy CRON_API_KEY
+const CRON_SECRET = process.env.CRON_SECRET
+const CRON_API_KEY = process.env.CRON_API_KEY
+const BATCH_SIZE = 20
+
+// Allow up to 60s on Vercel Pro
+export const maxDuration = 60
 
 // ---------------------------------------------------------------------------
 // Helpers
