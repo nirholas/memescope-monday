@@ -5,7 +5,6 @@ import { RiArrowRightLine, RiFireLine, RiRocketLine, RiSparklingLine } from "@re
 
 import { auth } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
-import { CountdownTimer } from "@/components/home/countdown-timer"
 import { ProjectSection } from "@/components/home/project-section"
 import { getNewlyListedProjects, getTopVotedProjects } from "@/app/actions/home"
 import { getTopCategories } from "@/app/actions/projects"
@@ -23,9 +22,6 @@ export default async function Home() {
   return (
     <main className="min-h-screen">
       <div className="container mx-auto max-w-6xl px-4 pt-6 pb-12 md:pt-8">
-        {/* Countdown Banner */}
-        <CountdownTimer />
-
         <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_300px] lg:items-start">
           {/* Main Content */}
           <div className="space-y-10">
@@ -170,7 +166,7 @@ export default async function Home() {
               </div>
               <div className="mt-3 flex items-center justify-center gap-2">
                 <a
-                  href="https://x.com/swarminged"
+                  href="https://x.com/MemecoinMonday"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-muted-foreground hover:text-foreground text-xs transition-colors"

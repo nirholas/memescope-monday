@@ -876,20 +876,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 </div>
               )}
 
-              {/* Platform */}
-              {projectData.platforms && projectData.platforms.length > 0 && (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
-                      Platform
-                    </span>
-                    <div className="border-muted-foreground/30 mx-3 flex-1 border-b border-dotted"></div>
-                    <span className="text-foreground text-sm font-medium capitalize">
-                      {projectData.platforms[0]}
-                    </span>
-                  </div>
-                </div>
-              )}
+
 
               {/* Pricing */}
               {projectData.pricing && (
@@ -963,25 +950,6 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                         </a>
                       )}
                     </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Tech Stack */}
-              {projectData.techStack && projectData.techStack.length > 0 && (
-                <div className="space-y-3">
-                  <h3 className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
-                    Tech Stack
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {projectData.techStack.slice(0, 6).map((tech) => (
-                      <span
-                        key={tech}
-                        className="bg-muted text-muted-foreground inline-flex items-center rounded-md px-2 py-1 text-xs"
-                      >
-                        #{tech}
-                      </span>
-                    ))}
                   </div>
                 </div>
               )}

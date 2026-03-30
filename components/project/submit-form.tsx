@@ -1,11 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client"
 
-import { useEffect, useId, useState } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 
-import { platformType, pricingType } from "@/drizzle/db/schema"
+import { pricingType } from "@/drizzle/db/schema"
 import {
   RiArrowLeftLine,
   RiArrowRightLine,
@@ -21,12 +21,12 @@ import {
   RiRocketLine,
 } from "@remixicon/react"
 import { format } from "date-fns"
-import { Tag, TagInput } from "emblor"
 
 import {
   DATE_FORMAT,
   LAUNCH_TYPES,
 } from "@/lib/constants"
+import { resizeImageFile } from "@/lib/resize-image"
 import { UploadButton } from "@/lib/uploadthing"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -48,7 +48,6 @@ interface ProjectFormData {
   description: string
   categories: string[]
   techStack: string[]
-  platforms: string[]
   pricing: string
   chain: string
   coinType: string
@@ -74,7 +73,6 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
     description: "",
     categories: [],
     techStack: [],
-    platforms: [],
     pricing: "",
     chain: "solana",
     coinType: "existing",
@@ -98,10 +96,6 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
   const [error, setError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
 
-  const tagInputId = useId()
-
-  const [techStackTags, setTechStackTags] = useState<Tag[]>([])
-  const [activeTechTagIndex, setActiveTechTagIndex] = useState<number | null>(null)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -164,23 +158,6 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
     fetchCategories()
   }, [])
 
-  useEffect(() => {
-    const tagsFromFormData = formData.techStack.map((tech, index) => ({
-      id: `${index}-${tech}`,
-      text: tech,
-    }))
-    if (JSON.stringify(tagsFromFormData) !== JSON.stringify(techStackTags)) {
-      setTechStackTags(tagsFromFormData)
-    }
-  }, [formData.techStack])
-
-  useEffect(() => {
-    const techStringArray = techStackTags.map((tag) => tag.text)
-    if (JSON.stringify(techStringArray) !== JSON.stringify(formData.techStack)) {
-      setFormData((prev) => ({ ...prev, techStack: techStringArray }))
-    }
-  }, [techStackTags])
-
   async function fetchCategories() {
     setIsLoadingCategories(true)
     try {
@@ -222,11 +199,6 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
 
       if (formData.categories.length > 3) {
         setError("You can select a maximum of 3 categories.")
-        return
-      }
-
-      if (formData.techStack.length > 5) {
-        setError("You can add a maximum of 5 technologies.")
         return
       }
     }
@@ -277,12 +249,6 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
       return
     }
 
-    if (formData.techStack.length > 5) {
-      setError("You can add a maximum of 5 technologies.")
-      setIsPending(false)
-      return
-    }
-
     try {
       const finalLogoUrl = uploadedLogoUrl || null
 
@@ -294,8 +260,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
         logoUrl: finalLogoUrl,
         productImage: formData.productImage,
         categories: formData.categories,
-        techStack: formData.techStack,
-        platforms: formData.platforms,
+        techStack: [],
         pricing: formData.pricing,
         chain: formData.chain,
         coinType: formData.coinType,
@@ -438,7 +403,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
   )
 
   const handleCheckboxChange = (
-    field: "categories" | "platforms",
+    field: "categories",
     value: string,
     checked: boolean,
   ) => {
@@ -460,10 +425,6 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
   }
 
   const getCategoryName = (id: string) => categories.find((cat) => cat.id === id)?.name || id
-  const getPlatformLabel = (value: string) =>
-    Object.entries(platformType)
-      .find(([, v]) => v === value)?.[0]
-      ?.toLowerCase() || value
   const getPricingLabel = (value: string) =>
     Object.entries(pricingType)
       .find(([, v]) => v === value)?.[0]
@@ -612,10 +573,10 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="logoUrl">
-                Logo (Max 1MB) <span>(Optional)</span>
+                Logo <span>(Optional)</span>
               </Label>
               <p className="text-muted-foreground text-xs">
-                Recommended: 1:1 square image (e.g., 256x256px).
+                Square image recommended. Large images are auto-resized.
               </p>
               {uploadedLogoUrl ? (
                 <div className="bg-muted/30 relative w-fit rounded-md border p-3">
@@ -641,6 +602,12 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
                 <div className="mt-2 flex items-center gap-2">
                   <UploadButton
                     endpoint="projectLogo"
+                    onBeforeUploadBegin={async (files) => {
+                      const resized = await Promise.all(
+                        files.map((f) => resizeImageFile(f, 512, 512)),
+                      )
+                      return resized
+                    }}
                     onUploadBegin={() => {
                       console.log("Upload Begin (Logo)")
                       setIsUploadingLogo(true)
@@ -690,7 +657,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
                 Product Image <span>(Optional)</span>
               </Label>
               <p className="text-muted-foreground text-xs">
-                Add a product image. Recommended: 16:9 aspect ratio (e.g., 800x450px).
+                Add a product image. 16:9 recommended. Large images are auto-resized.
               </p>
               {formData.productImage ? (
                 <div className="bg-muted/30 relative w-fit rounded-md border p-3">
@@ -716,6 +683,12 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
                 <div className="mt-2 flex items-center gap-2">
                   <UploadButton
                     endpoint="projectProductImage"
+                    onBeforeUploadBegin={async (files) => {
+                      const resized = await Promise.all(
+                        files.map((f) => resizeImageFile(f, 1280, 720)),
+                      )
+                      return resized
+                    }}
                     onUploadBegin={() => {
                       console.log("Upload Begin (Product Image)")
                       setIsUploadingProductImage(true)
@@ -808,69 +781,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
               </p>
             </div>
 
-            <div>
-              <Label htmlFor={tagInputId}>
-                Tech Stack
-                <span className="text-muted-foreground ml-2 text-xs">
-                  ({formData.techStack.length}/5 technologies)
-                </span>
-              </Label>
-              <TagInput
-                id={tagInputId}
-                tags={techStackTags}
-                setTags={(newTags) => {
-                  if (newTags.length > 5) {
-                    setError("You can add a maximum of 5 technologies.")
-                    return
-                  }
-                  setTechStackTags(newTags)
-                }}
-                placeholder="Type a technology and press Enter..."
-                styleClasses={{
-                  inlineTagsContainer:
-                    "border-input rounded-md bg-background shadow-xs transition-[color,box-shadow] focus-within:border-ring outline-none focus-within:ring-[3px] focus-within:ring-ring/50 p-1 gap-1 mt-1",
-                  input: "w-full min-w-[80px] shadow-none px-2 h-7",
-                  tag: {
-                    body: "h-7 relative bg-background border border-input hover:bg-background rounded-md font-medium text-xs ps-2 pe-7",
-                    closeButton:
-                      "absolute -inset-y-px -end-px p-0 rounded-e-md flex size-7 transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] text-muted-foreground/80 hover:text-foreground",
-                  },
-                }}
-                activeTagIndex={activeTechTagIndex}
-                setActiveTagIndex={setActiveTechTagIndex}
-              />
-              <p className="text-muted-foreground mt-1 text-xs">
-                Enter up to 5 technologies used, press Enter or comma to add a tag.
-              </p>
-            </div>
 
-            <div>
-              <Label className="mb-2 block">
-                Platforms
-              </Label>
-              <div className="space-y-3 rounded-md border p-4">
-                {Object.entries(platformType).map(([key, value]) => (
-                  <div key={value} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`platform-${value}`}
-                      checked={formData.platforms.includes(value)}
-                      onCheckedChange={(checked) =>
-                        handleCheckboxChange("platforms", value, !!checked)
-                      }
-                    />
-                    <Label
-                      htmlFor={`platform-${value}`}
-                      className="cursor-pointer font-normal capitalize"
-                    >
-                      {key.toLowerCase()}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-              <p className="text-muted-foreground mt-1 text-xs">
-                Select all platforms your project supports.
-              </p>
-            </div>
 
             {!formData.contractAddress && (
               <div>
@@ -1078,26 +989,7 @@ export function SubmitProjectForm({ userId }: SubmitProjectFormProps) {
                         ))}
                       </div>
                     </div>
-                    <div>
-                      <strong>Tech Stack:</strong>
-                      <div className="mt-1 flex flex-wrap gap-2">
-                        {formData.techStack.map((tech) => (
-                          <Badge key={tech} variant="outline">
-                            {tech}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <strong>Platforms:</strong>
-                      <div className="mt-1 flex flex-wrap gap-2">
-                        {formData.platforms.map((plat) => (
-                          <Badge key={plat} variant="secondary" className="capitalize">
-                            {getPlatformLabel(plat)}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
+
                     <p>
                       <strong>Pricing:</strong>{" "}
                       <span className="capitalize">

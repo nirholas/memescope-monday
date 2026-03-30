@@ -159,17 +159,6 @@ export default function ProjectLoading() {
                 </div>
               </div>
 
-              {/* Tech Stack */}
-              <div className="space-y-3">
-                <div className="bg-muted h-4 w-20 animate-pulse rounded-md"></div>
-                <div className="flex flex-wrap gap-2">
-                  <div className="bg-muted h-6 w-12 animate-pulse rounded-md"></div>
-                  <div className="bg-muted h-6 w-16 animate-pulse rounded-md"></div>
-                  <div className="bg-muted h-6 w-14 animate-pulse rounded-md"></div>
-                  <div className="bg-muted h-6 w-18 animate-pulse rounded-md"></div>
-                </div>
-              </div>
-
               {/* Share */}
               <div className="border-border border-t pt-4">
                 <div className="bg-muted h-9 w-full animate-pulse rounded-md"></div>

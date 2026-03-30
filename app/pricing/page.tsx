@@ -190,7 +190,7 @@ export default function PricingPage() {
               </Link>
             </Button>
             <Button size="sm" variant="outline" asChild>
-              <Link href="https://x.com/swarminged" target="_blank" rel="noopener noreferrer">
+              <Link href="https://x.com/MemecoinMonday" target="_blank" rel="noopener noreferrer">
                 Contact on X
               </Link>
             </Button>

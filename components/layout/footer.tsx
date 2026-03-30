@@ -23,7 +23,7 @@ const connectLinkItems = [
     label: "GitHub",
   },
   {
-    href: "https://x.com/swarminged",
+    href: "https://x.com/MemecoinMonday",
     icon: RiTwitterXFill,
     label: "Twitter / X",
   },
@@ -48,7 +48,7 @@ export default function FooterSection() {
             <p className="text-muted-foreground mb-4 text-sm">
               Open source project by{" "}
               <Link
-                href="https://x.com/swarminged"
+                href="https://x.com/MemecoinMonday"
                 target="_blank"
                 rel="noopener"
                 className="hover:text-primary underline"

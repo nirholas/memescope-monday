@@ -17,7 +17,7 @@ const authenticateUser = async () => {
 }
 
 export const ourFileRouter = {
-  projectLogo: f({ image: { maxFileSize: "1MB", maxFileCount: 1 } })
+  projectLogo: f({ image: { maxFileSize: "4MB", maxFileCount: 1 } })
     .middleware(authenticateUser)
     .onUploadComplete(async ({ metadata, file }) => {
       console.log("Logo Upload complete for userId:", metadata.userId)
@@ -25,7 +25,7 @@ export const ourFileRouter = {
       return { uploadedBy: metadata.userId, fileUrl: file.ufsUrl }
     }),
 
-  projectProductImage: f({ image: { maxFileSize: "1MB", maxFileCount: 1 } })
+  projectProductImage: f({ image: { maxFileSize: "4MB", maxFileCount: 1 } })
     .middleware(authenticateUser)
     .onUploadComplete(async ({ metadata, file }) => {
       console.log("Product Image Upload complete for userId:", metadata.userId)
