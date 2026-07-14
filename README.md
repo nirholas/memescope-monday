@@ -208,6 +208,4 @@ Built on top of [Open-Launch](https://github.com/openlaunch-org/Open-Launch), an
 
 ## License
 
-See [LICENSE](LICENSE) for details.
-
-
+All rights reserved. See [LICENSE](LICENSE).
