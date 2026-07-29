@@ -110,7 +110,7 @@ Visit `http://localhost:3000`
 | `RESEND_API_KEY`        | Transactional emails      |
 | `REDIS_URL`             | Rate limiting             |
 | `DISCORD_WEBHOOK_URL`   | Notifications             |
-| `NEXT_PUBLIC_GA_ID`     | Google Analytics          |
+| `PLAUSIBLE_SITE_ID`     | Analytics                 |
 | `TURNSTILE_SECRET_KEY`  | Cloudflare bot protection |
 
 See [.env.example](.env.example) for the full list.
