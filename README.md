@@ -253,3 +253,10 @@ Built on top of [Open-Launch](https://github.com/openlaunch-org/Open-Launch), an
 ## License
 
 All rights reserved. See [LICENSE](LICENSE).
+
+## Documentation
+
+Full documentation site: **https://nirholas.github.io/memescope-monday/**
+
+- [Getting started](docs/getting-started.md) covers install and first run.
+- [Examples](docs/examples.md) has copy-paste snippets.
