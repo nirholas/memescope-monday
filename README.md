@@ -57,28 +57,34 @@
 
 ## Quick Start
 
+The committed lockfile is `bun.lockb`, so [Bun](https://bun.sh) is the package
+manager this project installs with.
+
 ```bash
 # Clone
 git clone https://github.com/nirholas/memescope-monday.git
 cd memescope-monday
 
 # Install
-npm install --legacy-peer-deps
+bun install
 
 # Configure
 cp .env.example .env.local
 # Edit .env.local with your keys (see Environment Variables below)
 
-# Database
-npx drizzle-kit generate
-npx drizzle-kit migrate
-npx drizzle-kit push
+# Database: apply the committed migrations in drizzle/migrations/
+bun run db:migrate
 
 # Run
-npm run dev
+bun run dev
 ```
 
 Visit `http://localhost:3000`
+
+`db:migrate` applies the migrations that are already in the repo, which is what
+you want on a fresh clone. Use `db:generate` only after you edit
+`drizzle/db/schema.ts`, and `db:push` only to sync a throwaway dev database
+without writing a migration. Do not run all three in sequence.
 
 ## Environment Variables
 
@@ -170,37 +176,75 @@ components/
 └── ui/                         # Base UI components (Radix/shadcn)
 
 lib/
-├── db/                         # Database schema & queries (Drizzle)
-├── auth/                       # Auth config & helpers
+├── auth.ts                     # Better Auth server config
+├── auth-client.ts              # Better Auth browser client
 ├── coin-data/                  # Data enrichment (DexScreener, PumpFun, etc.)
+├── validations/                # Zod schemas for forms and API input
+├── hooks/                      # Shared React hooks
 └── constants.ts                # Launch config, pricing, dates
+
+drizzle/
+├── db/schema.ts                # Drizzle schema (source of truth)
+├── db/index.ts                 # Database client
+└── migrations/                 # Generated SQL migrations
+
+mcp/
+└── server.ts                   # Model Context Protocol server (bun run mcp)
+
+scripts/
+├── seed-coins.ts               # Seed the coin table
+├── pumpfun-migration-listener.ts  # Long-running PumpFun migration watcher
+├── categories.ts               # Category bootstrap
+└── set-admin.mjs               # Promote a user to admin
 ```
 
 ## Scripts
 
 ```bash
-npm run dev          # Start dev server (Turbopack)
-npm run build        # Production build
-npm run start        # Start production server
-npm run lint         # ESLint
-npm run db:generate  # Generate Drizzle migrations
-npm run db:migrate   # Run migrations
-npm run db:push      # Push schema to database
-npm run db:studio    # Open Drizzle Studio (DB explorer)
+bun run dev              # Start dev server (Turbopack)
+bun run build            # Production build
+bun run start            # Start production server
+bun run lint             # ESLint
+bun run db:generate      # Generate Drizzle migrations from schema.ts
+bun run db:migrate       # Apply migrations in drizzle/migrations/
+bun run db:push          # Push schema straight to a dev database
+bun run db:studio        # Open Drizzle Studio (DB explorer)
+bun run db:seed          # Seed the coin table (scripts/seed-coins.ts)
+bun run mcp              # Run the MCP server (mcp/server.ts)
+bun run update-launches  # Refresh launch data (scripts/update-launches.sh)
+```
+
+The PumpFun migration listener runs as a long-lived pm2 process:
+
+```bash
+bun run migrations:start   # pm2 start ecosystem.config.cjs
+bun run migrations:logs    # tail its output
+bun run migrations:stop    # stop it
+bun run migrations:listen  # run it in the foreground instead of under pm2
 ```
 
 ## Deployment
 
-Optimized for Vercel:
+There is no public deployment right now; hosting is being migrated. The source
+of truth is [github.com/nirholas/memescope-monday](https://github.com/nirholas/memescope-monday).
 
-1. Connect the GitHub repo to Vercel
-2. Set environment variables in the Vercel dashboard
-3. Auto-deploys on push
+The build is a standard Next.js server build, so it runs anywhere that can run
+Node:
 
 ```bash
-npm run build
-npm run start
+bun install
+bun run build   # emits .next/
+bun run start   # serves it on $PORT (default 3000)
 ```
+
+`bun run build` does **not** require a reachable database. Every database-backed
+route, the sitemap included, is server-rendered on demand. `DATABASE_URL` and
+the rest of the required variables are needed at runtime, not at build time.
+
+`vercel.json` declares the five cron schedules the app expects
+(`/api/cron/auto-list-migrations`, `enrich-coins`, `update-launches`,
+`send-ongoing-reminders`, `send-winner-notifications`). On a host without
+Vercel Cron, wire those paths to an equivalent scheduler.
 
 ## Credits
 

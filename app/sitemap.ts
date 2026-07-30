@@ -7,6 +7,15 @@ import { blogArticle, launchStatus, project, seoArticle } from "@/drizzle/db/sch
 
 const baseUrl = process.env.NEXT_PUBLIC_URL || "https://memescopemonday.com"
 
+// The sitemap enumerates projects, blog posts and review articles straight from
+// the database, so it has to be generated per request rather than frozen at
+// build time. Without this the build opens a connection during prerender, which
+// means `next build` fails anywhere the database is not reachable (CI, a
+// container image build, a fresh clone) and the deployed sitemap goes stale the
+// moment a project is added.
+export const dynamic = "force-dynamic"
+export const revalidate = 0
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [
