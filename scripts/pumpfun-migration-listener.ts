@@ -5,6 +5,9 @@
  * 1. Solana `programSubscribe` — watches for new Pump AMM (PumpSwap) market
  *    accounts on-chain. This never misses migrations, even when logs are
  *    truncated or errors occur mid-transaction (see chainstacklabs/pumpfun-bonkfun-bot#87).
+ *    Pools in every quote mint are watched: since the October 2026 Pump upgrade
+ *    a coin can be quoted in SOL, USDC or another pump coin and migrates into a
+ *    PumpSwap pool in that quote.
  * 2. PumpPortal WebSocket — lightweight relay that fires quickly for most events.
  *
  * Both feed into the same processing pipeline; the shared `processedMints` set
@@ -53,10 +56,13 @@ const RECONNECT_MAX_MS = 30_000
 
 // Pump AMM (PumpSwap) program
 const PUMP_AMM_PROGRAM_ID = "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
-const SOL_MINT = "So11111111111111111111111111111111111111112"
 
-// Market account layout: discriminator(8) + pool_bump(1) + index(2) + 6×pubkey(192) + lp_supply(8)
-const MARKET_ACCOUNT_LENGTH = 8 + 1 + 2 + 32 * 6 + 8 // 203
+// Pool account prefix decoded below: discriminator(8) + pool_bump(1) + index(2)
+// + 6 pubkeys(192) + lp_supply(8) = 211 bytes, the size of the oldest pools.
+// Newer pools are up to 287 bytes, or 300+ once grown by extend_account, so this
+// is a minimum length for decoding and the RPC filters match on the
+// discriminator only, never on dataSize.
+const MARKET_ACCOUNT_MIN_LENGTH = 8 + 1 + 2 + 32 * 6 + 8
 const MARKET_DISCRIMINATOR = new Uint8Array([0xf1, 0x9a, 0x6d, 0x04, 0x11, 0xb1, 0x6d, 0xbc])
 
 // ---------------------------------------------------------------------------
@@ -161,7 +167,7 @@ interface MarketAccount {
 }
 
 function parseMarketAccount(data: Buffer): MarketAccount | null {
-  if (data.length < MARKET_ACCOUNT_LENGTH) return null
+  if (data.length < MARKET_ACCOUNT_MIN_LENGTH) return null
 
   let offset = 8 // skip discriminator
   const poolBump = data.readUint8(offset)
@@ -380,11 +386,7 @@ async function fetchExistingMarkets(): Promise<void> {
             encoding: "base64",
             commitment: "confirmed",
             dataSlice: { offset: 0, length: 0 },
-            filters: [
-              { dataSize: MARKET_ACCOUNT_LENGTH },
-              { memcmp: { offset: 0, bytes: DISCRIMINATOR_BASE58 } },
-              { memcmp: { offset: 75, bytes: SOL_MINT } },
-            ],
+            filters: [{ memcmp: { offset: 0, bytes: DISCRIMINATOR_BASE58 } }],
           },
         ],
       }),
@@ -420,11 +422,7 @@ function connectProgramSubscribe() {
           {
             commitment: "confirmed",
             encoding: "base64",
-            filters: [
-              { dataSize: MARKET_ACCOUNT_LENGTH },
-              { memcmp: { offset: 0, bytes: DISCRIMINATOR_BASE58 } },
-              { memcmp: { offset: 75, bytes: SOL_MINT } },
-            ],
+            filters: [{ memcmp: { offset: 0, bytes: DISCRIMINATOR_BASE58 } }],
           },
         ],
       }),
