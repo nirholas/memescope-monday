@@ -260,3 +260,7 @@ Full documentation site: **https://nirholas.github.io/memescope-monday/**
 
 - [Getting started](docs/getting-started.md) covers install and first run.
 - [Examples](docs/examples.md) has copy-paste snippets.
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=nirholas/memescope-monday&type=Date)](https://www.star-history.com/#nirholas/memescope-monday&Date)
