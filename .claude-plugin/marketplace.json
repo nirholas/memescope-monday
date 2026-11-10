@@ -1,0 +1,20 @@
+{
+  "name": "memescope-monday",
+  "owner": {
+    "name": "nirholas"
+  },
+  "description": "Query the Memescope Monday memecoin directory and look up token data through its local MCP server.",
+  "plugins": [
+    {
+      "name": "memescope-monday",
+      "source": "./plugins/memescope-monday",
+      "description": "Query the Memescope Monday memecoin directory and look up token data through its local MCP server.",
+      "category": "data",
+      "tags": [
+        "memecoin",
+        "mcp",
+        "directory"
+      ]
+    }
+  ]
+}
